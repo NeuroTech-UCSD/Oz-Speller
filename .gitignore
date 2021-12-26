@@ -1,0 +1,12 @@
+# Ignore notebook checkpoints
+*.ipynb_checkpoints*
+
+# Ignore cache
+*/__pycache__/*
+*.cache*
+
+# Ignore mac directory files
+.DS_Store
+
+# Ignore vscode files
+.vscode
