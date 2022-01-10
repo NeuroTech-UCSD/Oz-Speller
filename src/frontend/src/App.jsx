@@ -8,6 +8,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import DataCollectionPage from "./dataCollectionView/DataCollectionPage";
 import CalibrationPage from "./calibrationView/CalibrationPage";
 import ChartPage from "./chartView/ChartPage";
+import Plots from "./Plots";
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -52,9 +53,10 @@ function App() {
           <Tab label="Chart View" {...a11yProps(0)} />
           <Tab label="Data Collection" {...a11yProps(1)} />
           <Tab label="Calibration" {...a11yProps(2)} />
+          <Tab label="Plots" {...a11yProps(2)} />
         </Tabs>
       </Container>
-      {[<ChartPage />, <DataCollectionPage />, <CalibrationPage />][tab]}
+      {[<ChartPage />, <DataCollectionPage />, <CalibrationPage />, <Plots />][tab]}
       {/* <Bar_Chart/> */}
       {/*<Signals_Chart/>*/}
       {/* <Features_Chart feature="rms" /> */}
