@@ -1,5 +1,5 @@
-aiohttp==3.6.2
-async-timeout==3.0.1
+aiohttp==3.8.1
+async-timeout==4.0.2
 chardet==3.0.4
 multidict==4.7.5
 python-engineio

@@ -1,0 +1,13 @@
+{
+    "id": "Cole",
+    "trial": "1",
+    "mode": "Guided",
+    "datetime": "2020-03-08-17:06:26:347",
+    "timestamp": "1583701586347",
+    "prompts": "left pinkie a , left ring finger s , left middle finger d ,left index finger f ,right index finger j ,right middle finger k ,right ring finger l ,right pinkie semicolon",
+    "notes": "notes"
+}
+datetime, timestamp, event, hand, finger, key
+2020-03-08-17:06:29:297, 1583701589297, keystroke, , , a
+2020-03-08-17:06:29:419, 1583701589419, prompt_end, left, pinkie, 
+2020-03-08-17:06:31:123, 1583701591123, keystroke, , , space
