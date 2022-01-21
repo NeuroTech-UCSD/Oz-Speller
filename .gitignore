@@ -10,3 +10,6 @@
 
 # Ignore vscode files
 .vscode
+
+# Distribution / packaging
+env/
