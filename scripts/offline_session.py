@@ -13,37 +13,39 @@ import os
 from os.path import join as pjoin
 import json
 import numpy as np
-from custom_module import CustomModule
-from utils import save_metadata, save_data
+from multiprocessing import Process, Queue
+from backend import Server
+from dsi import TCPParser
 
 ##########################################################################
 ##########################################################################
 
 ## SETTINGS
+# CONFIG = {
+#     'TRIAL_DURATION' : 2000, #(e.g. 2000 ms)
+#     'TARGET_FREQUENCIES' : {'a': 15, 'b': 14},
+#     'INTER_TRIAL_INTERVAL' : 1000, #(between targets)
+#     'STARTUP_DELAY' : 0, #(before the first trial starts)
+#     'SAMPLING_FREQUENCY' : 100,
+#     'BREAK_DURATION' : 20, # in seconds
+#     'NUM_TRIALS' : 7, #(e.g. randomly pick 10 of the 40 characters)
+#     'CHANNELS' : ['P4']
+# }
 
-# WINDOW_SIZE = [1366, 768] # in number of pixels
-# FULL_SCREEN = False # if set to True, WINDOW_SIZE would be ignored
-# FPS = 60 # refresh rate of the display
-# N_TRIALS = 2 # number of trials for each target; or [a,b,c...]
-# DURATION = 2.0 # in seconds, duration of each trial
-# WAITTIME = 3.0 # in seconds, inter-trial wait time
-# SESSION_NAME = 'testing1'
-CONFIG = {
-    'TRIAL_DURATION' : 2000, #(e.g. 2000 ms)
-    'TARGET_FREQUENCIES' : {'a': 15, 'b': 14},
-    'INTER_TRIAL_INTERVAL' : 1000, #(between targets)
-    'STARTUP_DELAY' : 0, #(before the first trial starts)
-    'SAMPLING_FREQUENCY' : 100,
-    'BREAK_DURATION' : 20, # in seconds
-    'NUM_TRIALS' : 7, #(e.g. randomly pick 10 of the 40 characters)
-    'CHANNELS' : ['P4']
-}
+SUBJECT_NUMBER = 0 # to be set by frontend
+SESSION_NUMBER = 0 # to be set by frontend
+
+with open('config.json', 'r') as json_file:
+    CONFIG = json.load(json_file)
+
+for key,val in CONFIG.items():
+    exec(key + '=val')
 
 
 ### SET PATHS
 BASE_PATH = "../"
-FIGURE_PATH = pjoin(pjoin(BASE_PATH, "figures/calibration/"),SESSION_NAME)
-DATA_PATH = pjoin(pjoin(BASE_PATH, "data/eeg_recordings/"),SESSION_NAME)
+FIGURE_PATH = pjoin(BASE_PATH, "figures/eeg_recordings/")
+DATA_PATH = pjoin(BASE_PATH, "data/eeg_recordings/")
 if not os.path.isdir(FIGURE_PATH):
     os.makedirs(FIGURE_PATH)
 if not os.path.isdir(DATA_PATH):
@@ -52,21 +54,27 @@ if not os.path.isdir(DATA_PATH):
 ##########################################################################
 ##########################################################################
 
-def calibration():
-    """Runs the calibration script"""
-    custom_instance = CustomModule(N_TRIALS, DURATION)
-    custom_instance.do_this()
+# def calibration():
+#     """Runs the calibration script"""
+#     custom_instance = CustomModule(N_TRIALS, DURATION)
+#     custom_instance.do_this()
 
-    #### SAVE DATA
-    meta = custom_instance.meta
-    save_metadata(meta, DATA_PATH)
-    # save raw eeg data, will overwrite eeg.csv by default
-    # see calibration_instance for details about the eeg variable
-    np.savetxt(pjoin(DATA_PATH, 'eeg.csv'), custom_instance.eeg, delimiter=',')
+#     #### SAVE DATA
+#     meta = custom_instance.meta
+#     save_metadata(meta, DATA_PATH)
+#     # save raw eeg data, will overwrite eeg.csv by default
+#     # see calibration_instance for details about the eeg variable
+#     np.savetxt(pjoin(DATA_PATH, 'eeg.csv'), custom_instance.eeg, delimiter=',')
 
 ##########################################################################
 ##########################################################################
 
 if __name__ == "__main__": # if this script is run as a script rather
                            # than imported
-    calibration()
+    # with open('config.json', 'w') as json_file:
+    #     json.dump(CONFIG, json_file, indent = 4, sort_keys=True)
+    # for vars in dir():
+    #     print(vars)
+    queue = Queue()
+    server = Server(queue)
+    dsi_parser = TCPParser('localhost',8844)
