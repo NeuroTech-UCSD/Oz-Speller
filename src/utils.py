@@ -8,6 +8,8 @@ Notes: (optional)
 ## IMPORTS
 
 import numpy as np
+import time
+import threading
 import json
 from os.path import join as pjoin
 
@@ -25,6 +27,44 @@ BAUD_RATE = 115200
 
 ##########################################################################
 ##########################################################################
+
+def stream_random_data(queue):
+    try:
+        while True:
+            queue.put({"background":{
+                        'timestamp': time.time(),
+                        'value' : list(np.random.rand(8))
+                        },
+                        "background2":{
+                        'timestamp': time.time(),
+                        'value' : list(np.random.rand(8))
+                        }})
+            time.sleep(0.01)
+    except KeyboardInterrupt:
+        pass
+
+def stream_dsi_data(dsi_parser, queue):
+    data_thread = threading.Thread(target=dsi_parser.parse_data)
+    data_thread.daemon = True
+    data_thread.start()
+    refresh_rate = 0.1
+    # try:
+    while True:
+        dsi_parser.signal_log = dsi_parser.signal_log[:,-1000:]
+        dsi_parser.time_log = dsi_parser.time_log[:,-1000:]
+        # print("Timestamps: " + str(dsi_parser.time_log.shape))
+        # print("Signal Data: " + str(dsi_parser.signal_log.shape))
+        queue.put({"background":{
+                    'timestamp': dsi_parser.time_log[0,0],
+                    'value' : list(dsi_parser.signal_log[:8,0])
+                    },
+                    "background2":{
+                    'timestamp': time.time(),
+                    'value' : list(np.random.rand(8))
+                    }})
+        time.sleep(refresh_rate)
+    # except KeyboardInterrupt:
+    #     data_thread.join()
 
 def do_something(epochs, subject, threshold):
     '''
