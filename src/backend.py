@@ -24,9 +24,8 @@ class Server:
                 queue_item = self.queue.get()
                 await self.sio.emit("background", queue_item['background'])
                 await self.sio.emit("background2", queue_item['background2'])
-                while not queue.empty(): # lousy way of clearing the queue
+                while not queue.empty(): # lousy way of clearing the queue TODO: not clearing the queue
                     queue.get()
-
 
     def start_server(self):
         self.sio.start_background_task(target=self.background_task)
@@ -35,8 +34,10 @@ class Server:
 # def run_task(task):
 #     asyncio.run(task.get_coro())
 
+# list(q.queue) to get elements without deleting them
+
 if __name__ == '__main__':
-    queue = Queue()
+    queue = Queue() # TODO: make a queue with a max size roughly equal to max length the ml_prediction function would use
     server = Server(queue)
     dsi_parser = TCPParser('localhost',8844)
     # stream_random_data_thread = Process(target=stream_random_data, args=(queue,))
@@ -45,6 +46,7 @@ if __name__ == '__main__':
     stream_dsi_data_thread = Process(target=stream_dsi_data, args=(dsi_parser, queue,))
     stream_dsi_data_thread.daemon = True
     stream_dsi_data_thread.start()
+    # TODO: ml_prediction_thread should take the queue by list(q.queue) and save to server.prediction 
     server.start_server()
 
     # exiting the program
