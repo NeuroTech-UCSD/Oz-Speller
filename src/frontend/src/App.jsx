@@ -9,6 +9,7 @@ import DataCollectionPage from "./dataCollectionView/DataCollectionPage";
 import CalibrationPage from "./calibrationView/CalibrationPage";
 import ChartPage from "./chartView/ChartPage";
 import Plots from "./Plots";
+import OfflineData from "./OfflineDataCollection/OfflineData";
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -40,7 +41,7 @@ function App() {
     <div className={classes.root}>
       <Container maxWidth="xl">
         <Typography className={classes.title} variant="h3">
-          McGill NeuroTech 2020 - Production Dashboard
+          TritonNeuroTech - Production Dashboard
         </Typography>
         <Tabs
           className={classes.navigation}
@@ -56,7 +57,7 @@ function App() {
           <Tab label="Plots" {...a11yProps(2)} />
         </Tabs>
       </Container>
-      {[<ChartPage />, <DataCollectionPage />, <CalibrationPage />, <Plots />][tab]}
+      {[<ChartPage />, <OfflineData />, <CalibrationPage />, <Plots />][tab]}
       {/* <Bar_Chart/> */}
       {/*<Signals_Chart/>*/}
       {/* <Features_Chart feature="rms" /> */}
