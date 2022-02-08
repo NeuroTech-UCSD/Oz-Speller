@@ -1,0 +1,16 @@
+{
+    "SESSION_NUMBER" : 0,
+    "BREAK_DURATION": 20,
+    "CHANNELS": [
+        "P4"
+    ],
+    "INTER_TRIAL_INTERVAL": 1000,
+    "NUM_TRIALS": 7,
+    "SAMPLING_FREQUENCY": 100,
+    "STARTUP_DELAY": 0,
+    "TARGET_FREQUENCIES": {
+        "a": 15,
+        "b": 14
+    },
+    "TRIAL_DURATION": 2000
+}
