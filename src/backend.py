@@ -5,6 +5,7 @@ from multiprocessing import Process, Queue, Lock
 import numpy as np
 from dsi import TCPParser
 from utils import stream_random_data, stream_dsi_data
+# SWE TODO: import calibration_manager, online_manager
 
 class Server:
     def __init__(self, queue):
@@ -31,18 +32,17 @@ class Server:
         self.sio.start_background_task(target=self.background_task)
         web.run_app(self.app, host='0.0.0.0', port='4002')
 
-# def run_task(task):
-#     asyncio.run(task.get_coro())
+    # SWE TODO: devise a way to get readiness signal from the frontend here
+    #           the readiness signal includes a config json object
+    #           you'll need to start the either the calibration/online manager 
+    #           function thread here, with the config json object as parameter
 
-# list(q.queue) to get elements without deleting them
+# Note: list(q.queue) to get elements without deleting them
 
 if __name__ == '__main__':
     queue = Queue() # TODO: make a queue with a max size roughly equal to max length the ml_prediction function would use
     server = Server(queue)
     dsi_parser = TCPParser('localhost',8844)
-    # stream_random_data_thread = Process(target=stream_random_data, args=(queue,))
-    # stream_random_data_thread.daemon = True
-    # stream_random_data_thread.start()
     stream_dsi_data_thread = Process(target=stream_dsi_data, args=(dsi_parser, queue,))
     stream_dsi_data_thread.daemon = True
     stream_dsi_data_thread.start()
@@ -50,5 +50,4 @@ if __name__ == '__main__':
     server.start_server()
 
     # exiting the program
-    # stream_random_data_thread.join()
     stream_dsi_data_thread.join()

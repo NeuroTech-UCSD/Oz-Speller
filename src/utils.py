@@ -28,6 +28,16 @@ BAUD_RATE = 115200
 ##########################################################################
 ##########################################################################
 
+# SWE TODO: calibration_manager
+#           takes config json/dict
+#           alters (event, duration) in the server object
+
+# SWE TODO: online_manager
+#           takes config json/dict
+#           alters (event, duration) in the server object
+
+# Simon TODO: ml_prediction
+
 def stream_random_data(queue):
     try:
         while True:
@@ -43,6 +53,7 @@ def stream_random_data(queue):
     except KeyboardInterrupt:
         pass
 
+# Simon TODO: save csv, read (event, duration) from server
 def stream_dsi_data(dsi_parser, queue):
     data_thread = threading.Thread(target=dsi_parser.parse_data)
     data_thread.daemon = True
