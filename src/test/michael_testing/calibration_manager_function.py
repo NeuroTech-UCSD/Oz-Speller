@@ -1,5 +1,5 @@
 import asyncio
-from random import random
+import random
 
 import socketio
 import time
@@ -37,8 +37,8 @@ async def send_trial():
     print('calibration manager initiated -- Start sending trials ...')
     # ============= use config instead of hard coding ================
     num_trials = config["NUM_TRIALS"]
-    trial_duration = config["TRIAL_DURATION"]
-    inter_trial_interval = config["INTER_TRIAL_INTERVAL"]
+    trial_duration = config["TRIAL_DURATION"] / 1000  # convert to seconds
+    inter_trial_interval = config["INTER_TRIAL_INTERVAL"] / 1000  # convert to seconds
     # ================================================================
 
     tic = time.time()

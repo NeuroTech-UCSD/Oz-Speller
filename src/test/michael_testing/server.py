@@ -25,7 +25,7 @@ class Server:
     '''
 
     async def check_components_ready(self, sid):
-        while (self.dsi_ready and self.calibration_ready and self.frontend_ready) is False:
+        while (self.dsi_ready and self.frontend_ready) is False:
             await self.sio.sleep(5)  # will check if all components are ready every 5 seconds
         print('All components are ready')
 
