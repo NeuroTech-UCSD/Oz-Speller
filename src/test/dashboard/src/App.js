@@ -21,7 +21,7 @@ class App extends Component {
     return (
       <div className="App">
         <Navigation changeRoute={this.changeRoute} />
-        { this.state.route === 'calibration' ? <CalibrationPage/> : 
+        { this.state.route === 'calibration' ? <CalibrationPage/> :
           this.state.route === 'onlinePrediction' ? <OnlinePredictionPage/> :
           <PlotPage/> // else display Plot Page
         }
