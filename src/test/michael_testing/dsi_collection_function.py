@@ -2,6 +2,7 @@ import asyncio
 import socketio
 import time
 import datetime
+import numpy as np
 
 sio = socketio.AsyncClient()
 PORT = 4002
@@ -60,13 +61,32 @@ async def fetch_data():
         print(f'current trial {current_trial} -- {s}')
         await sio.sleep(2)  # provide window for other thread to run
 
-
+async def fetch_fake_data():
+    '''
+    This function will continue fetch data from dsi headset and \
+    (1) write the data to the csv
+    (2) send it (deque snapshot with k elements with num_channels size each, k should be >= 1) to remote
+    Note: we can move (2) outside and have the server ask for it instead
+    :return:
+    '''
+    print('dsi collection initiated -- Start recording data ...')
+    # ============= use config instead of hard coding ================
+    num_trials = 7
+    trial_duration = 3
+    inter_trial_interval = 2
+    # ================================================================
+    while True:
+        # a = datetime.datetime.now()
+        # s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
+        # print(f'current trial {current_trial} -- {s}')
+        await sio.emit('receive data', np.random.rand(5,8).tolist()) # pretend we got 5 samples in buffer
+        await sio.sleep(0.1)  # provide window for other thread to run
 
 
 async def main():
     await sio.connect(f'http://localhost:{PORT}')
     await sio.start_background_task(ready)
-    sio.start_background_task(fetch_data)
+    sio.start_background_task(fetch_fake_data)
     await sio.wait()  # this line is important, do not delete
 
 

@@ -2,6 +2,8 @@ import socketio
 from aiohttp import web
 import asyncio
 from collections import deque
+import numpy as np
+import time
 
 
 class Server:
@@ -35,6 +37,7 @@ class Server:
 
     async def send_dsi_ready_signal(self, sid):
         self.dsi_ready = True
+        self.sio.start_background_task(target=self.send_plot_to_frontend)
         print(f'dsi is ready')
         return self.config
 
@@ -68,6 +71,7 @@ class Server:
         :param data: 2d deque, k elements each with size num_channels, k is an arbitrary positive int >= 1
         :return:
         '''
+        data = np.array(data) # turn list to numpy
         # case: if buffer not filled
         if len(self.plot_buffer) < self.plot_buffer_size:
             num_extra = len(self.plot_buffer) + len(data[0]) - self.plot_buffer_size
@@ -82,6 +86,17 @@ class Server:
                 self.plot_buffer.popleft()
                 self.plot_buffer.append(data[:][i])
 
+    async def send_plot_to_frontend(self):
+        """Example of how to send server generated events to clients."""
+        while True:
+            if self.plot_buffer: # if not empty
+                # print(np.array(self.plot_buffer)[0].shape)
+                await self.sio.emit('time series', {
+                                                    'timestamp': time.time(),
+                                                    'value' : list(np.array(self.plot_buffer)[-1])
+                                                    })
+            await self.sio.sleep(0.2)
+
     def start_server(self):
         self.sio.on('form submitted', self.get_config_handler)
         self.sio.on('dsi ready', self.send_dsi_ready_signal)
@@ -95,4 +110,5 @@ class Server:
 
 if __name__ == '__main__':
     server = Server()
+    # asyncio.run(server.start_server())
     server.start_server()
