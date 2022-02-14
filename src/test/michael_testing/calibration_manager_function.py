@@ -1,7 +1,10 @@
 import asyncio
+from random import random
+
 import socketio
 import time
 import datetime
+from itertools import permutations
 
 sio = socketio.AsyncClient()
 PORT = 4002
@@ -33,19 +36,28 @@ async def ready():
 async def send_trial():
     print('calibration manager initiated -- Start sending trials ...')
     # ============= use config instead of hard coding ================
-    num_trials = 7
-    trial_duration = 3
-    inter_trial_interval = 2
+    num_trials = config["NUM_TRIALS"]
+    trial_duration = config["TRIAL_DURATION"]
+    inter_trial_interval = config["INTER_TRIAL_INTERVAL"]
     # ================================================================
 
     tic = time.time()
+    characters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+                  'U', 'V', 'W', 'X', 'Y', 'Z']
+    stored_values = []
     for i in range(num_trials):
-        await sio.emit('generate trial', chr(i + 97))
         a = datetime.datetime.now()
+        random_index = random.randint(0, len(characters) - 1)
+        while random_index in stored_values:
+            random_index = random.randint(0, len(characters) - 1)
+        stored_index = random_index
+        stored_values.append(stored_index)
+
         s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
         print(
-            f'calibration manager: send trial {chr(i + 97)} to server, time diff since last trial: {time.time() - tic:.3f}, {s}')
+            f'calibration manager: send trial {characters[random_index]} to server, time diff since last trial: {time.time() - tic:.3f}, {s}')
         tic = time.time()
+        await sio.emit('generate trial', characters[random_index])
         await asyncio.sleep(trial_duration + inter_trial_interval)
 
 
