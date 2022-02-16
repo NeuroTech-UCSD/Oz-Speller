@@ -15,18 +15,18 @@ function OnlinePredictionPage() {
         config = socket.call('frontend-ready');
         
         // TODO: insert correct events into .on() for predicting and holding
-        socket.on('generate trial', (trial) => {
-            setPred(trial)
+        socket.on('start_flashing', (trial) => {
+            setPred(trial);
             setTimeout(() => {
-                // do countdown on ui
+                // call function to countdown in UI
                 socket.emit('countdown done')
-            }, config.interval)
-            setOps(true)
+            }, config.countdown);
+            setOps(true);
             setTimeout(() => {
-                // do countdown on ui
+                // call function to flash in UI
                 setOps(false)
                 socket.emit('finished flashing')
-            }, config.inter_interval)
+            }, config.TRIAL_DURATION);
 
             // should get the prediction
         })
