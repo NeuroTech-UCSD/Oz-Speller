@@ -5,7 +5,7 @@ import socketIOClient from "socket.io-client";
 
 function OnlinePredictionPage() {
     const [ops, setOps] = useState(false);
-    const [pred, setPred] = useState("")
+    const [pred, setPred] = useState("");
 
     let socket = null;
     let config = null;
@@ -17,23 +17,25 @@ function OnlinePredictionPage() {
         // TODO: insert correct events into .on() for predicting and holding
         socket.on('start_flashing', (trial) => {
             setPred(trial);
+            
+            // call function to countdown in UI
             setTimeout(() => {
-                // call function to countdown in UI
-                socket.emit('countdown done')
+                socket.emit('countdown done');
             }, config.countdown);
+            
             setOps(true);
+
+            // call function to flash in UI
             setTimeout(() => {
-                // call function to flash in UI
-                setOps(false)
-                socket.emit('finished flashing')
+                setOps(false);
+                socket.emit('finished flashing');
             }, config.TRIAL_DURATION);
 
             // should get the prediction
-        })
+        });
+    });
 
-    })
-
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     return (
         <>
         <h1 style={{textAlign: "center"}}>Prediction: {pred}</h1>
