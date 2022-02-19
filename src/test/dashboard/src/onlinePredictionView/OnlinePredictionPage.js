@@ -25,7 +25,6 @@ function OnlinePredictionPage() {
             
             setOps(true);
 
-            // call function to flash in UI
             setTimeout(() => {
                 setOps(false);
                 socket.emit('finished flashing');
