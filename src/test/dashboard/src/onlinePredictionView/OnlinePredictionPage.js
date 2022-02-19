@@ -20,7 +20,7 @@ function OnlinePredictionPage() {
             
             // call function to countdown in UI
             setTimeout(() => {
-                socket.emit('countdown done');
+                socket.emit('countdown done', Date.now());
             }, config.countdown);
             
             setOps(true);
