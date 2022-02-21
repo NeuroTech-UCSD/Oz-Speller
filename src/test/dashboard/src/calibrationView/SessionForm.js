@@ -3,8 +3,8 @@ import socketIOClient from "socket.io-client";
 import default_config from "./default_config.json"
 
 class SessionForm extends Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.socket = null;
         this.config = default_config;
     }
@@ -16,6 +16,7 @@ class SessionForm extends Component {
 
     handleClick = () => {
         this.socket.emit('form submitted', this.config);
+        this.props.changePage(1)
     }
 
     handleChange = (event) => {
