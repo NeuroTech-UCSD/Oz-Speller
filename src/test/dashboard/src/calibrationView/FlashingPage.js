@@ -20,14 +20,18 @@ function FlashingPage() {
             
             // call function to countdown in UI
             setTimeout(() => {
-                socket.emit('countdown done', Date.now());
-            }, config.countdown);
+                socket.emit('countdown done', trial);
+                var now = new Date();
+                console.log("finished countdown:" + now.getMinutes() + ":" + now.getSeconds());
+            }, config.INTER_TRIAL_INTERVAL);
             
             setOps(true);
 
             setTimeout(() => {
                 setOps(false);
-                socket.emit('finished flashing');
+                socket.emit('finished flashing', "*");  // * is used as the null character
+                var now = new Date();
+                console.log("finished flashing:" + now.getMinutes() + ":" + now.getSeconds());
             }, config.TRIAL_DURATION);
 
             // should get the prediction
