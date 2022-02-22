@@ -19,16 +19,16 @@ function FlashingPage() {
             setPred(trial);
             
             // call function to countdown in UI
-            setTimeout(() => {
+            await new Promise(setTimeout(() => {
                 socket.emit('countdown done', Date.now());
-            }, config.countdown);
+            }, config.countdown));
             
             setOps(true);
 
-            setTimeout(() => {
+            await new Promise(setTimeout(() => {
                 setOps(false);
                 socket.emit('finished flashing');
-            }, config.TRIAL_DURATION);
+            }, config.TRIAL_DURATION));
 
             // should get the prediction
         });
