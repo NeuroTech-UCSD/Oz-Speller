@@ -32,7 +32,7 @@ function FlashingPage() {
 
             // should get the prediction
         });
-    });
+    }, []);
 
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     return (
