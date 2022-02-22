@@ -12,23 +12,23 @@ function FlashingPage() {
 
     useEffect(() => {
         socket = socketIOClient("http://localhost:4002");
-        config = socket.call('frontend ready');
+        config = socket.emit('frontend ready');
         
         // TODO: insert correct events into .on() for predicting and holding
         socket.on('start_flashing', (trial) => {
             setPred(trial);
             
             // call function to countdown in UI
-            await new Promise(setTimeout(() => {
+            setTimeout(() => {
                 socket.emit('countdown done', Date.now());
-            }, config.countdown));
+            }, config.countdown);
             
             setOps(true);
 
-            await new Promise(setTimeout(() => {
+            setTimeout(() => {
                 setOps(false);
                 socket.emit('finished flashing');
-            }, config.TRIAL_DURATION));
+            }, config.TRIAL_DURATION);
 
             // should get the prediction
         });
