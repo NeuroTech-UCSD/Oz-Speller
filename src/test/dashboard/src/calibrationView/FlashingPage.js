@@ -12,7 +12,7 @@ function FlashingPage() {
 
     useEffect(() => {
         socket = socketIOClient("http://localhost:4002");
-        config = socket.emit('frontend ready');
+        config = socket.call('frontend ready');
         
         // TODO: insert correct events into .on() for predicting and holding
         socket.on('start_flashing', (trial) => {
