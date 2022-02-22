@@ -83,7 +83,7 @@ class TimeSeriesPlot extends Component {
     }
     componentDidMount() {
         const socket = socketIOClient("http://localhost:4002");
-        socket.on("background", (new_data) => {
+        socket.on("time series", (new_data) => {
             for (let i = 0; i < this.data.datasets.length; i++) {
               this.data.datasets[i].data.push({
                 x: Date.now(),
