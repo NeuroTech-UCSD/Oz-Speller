@@ -3,6 +3,8 @@ import socketio
 import time
 import datetime
 import numpy as np
+import threading
+from dsi import TCPParser
 
 sio = socketio.AsyncClient()
 PORT = 4002
@@ -55,11 +57,17 @@ async def fetch_data():
     trial_duration = 3
     inter_trial_interval = 2
     # ================================================================
+    dsi_parser = TCPParser('localhost',8844)
+    data_thread = threading.Thread(target=dsi_parser.parse_data)
+    # data_thread.daemon = True
+    data_thread.start()
     while True:
-        a = datetime.datetime.now()
-        s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
-        print(f'current trial {current_trial} -- {s}')
-        await sio.sleep(2)  # provide window for other thread to run
+        # a = datetime.datetime.now()
+        # s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
+        # print(f'current trial {current_trial} -- {s}')
+        dsi_parser.signal_log = dsi_parser.signal_log[:,-1000:]
+        dsi_parser.time_log = dsi_parser.time_log[:,-1000:]
+        await sio.sleep(0.1)  # provide window for other thread to run
 
 async def fetch_fake_data():
     '''
@@ -92,7 +100,8 @@ async def fetch_fake_data():
 async def main():
     await sio.connect(f'http://localhost:{PORT}')
     await sio.start_background_task(ready)
-    sio.start_background_task(fetch_fake_data)
+    # sio.start_background_task(fetch_fake_data)
+    sio.start_background_task(fetch_data)
     await sio.wait()  # this line is important, do not delete
 
 
