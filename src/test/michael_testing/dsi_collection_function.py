@@ -75,11 +75,17 @@ async def fetch_fake_data():
     trial_duration = 3
     inter_trial_interval = 2
     # ================================================================
+    file = open('./fake_eeg.csv', 'w')
+    file.write('ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8\n')
+    file.close()
     while True:
         # a = datetime.datetime.now()
         # s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
         # print(f'current trial {current_trial} -- {s}')
-        await sio.emit('receive data', np.random.rand(5,8).tolist()) # pretend we got 5 samples in buffer
+        fake_data = np.random.rand(5,8)
+        with open('./fake_eeg.csv', 'a') as csv_file: # 'a' for append
+            np.savetxt(csv_file, fake_data, delimiter=', ')
+        await sio.emit('receive data', fake_data.tolist()) # pretend we got 5 samples in buffer
         await sio.sleep(0.1)  # provide window for other thread to run
 
 

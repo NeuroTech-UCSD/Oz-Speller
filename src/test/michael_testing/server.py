@@ -18,9 +18,9 @@ class Server:
         self.dsi_ready = False
         self.frontend_ready = False
         self.state = None
-        self.plot_buffer = deque()  # buffer for the plot function. Once filled to plot_buffer_size,
-        # will always have shape (plot_buffer_size, num_channels) when we do np.array(self.plot_buffer)
         self.plot_buffer_size = 1000  # number of time points for the buffer
+        self.plot_buffer = deque(maxlen=self.plot_buffer_size)  # buffer for the plot function. Once filled to plot_buffer_size,
+        # will always have shape (plot_buffer_size, num_channels) when we do np.array(self.plot_buffer)
 
     '''
     Check if all the components are ready to start the experiment
@@ -81,19 +81,21 @@ class Server:
         :return:
         '''
         data = np.array(data) # turn list to numpy
-        # case: if buffer not filled
-        if len(self.plot_buffer) < self.plot_buffer_size:
-            num_extra = len(self.plot_buffer) + len(data[0]) - self.plot_buffer_size
-            for i in range(num_extra):
-                self.plot_buffer.popleft()
-            for i in range(len(data[0])):
-                self.plot_buffer.append(data[:][i])
 
-        # case: if buffer filled
-        else:
-            for i in range(len(data[0])):
-                self.plot_buffer.popleft()
-                self.plot_buffer.append(data[:][i])
+        # we no longer need cases since deque now has a max size
+        # case: if buffer not filled
+        if len(self.plot_buffer) <= self.plot_buffer_size:
+            # num_extra = len(self.plot_buffer) + len(data[0]) - self.plot_buffer_size
+            # for i in range(num_extra):
+            #     self.plot_buffer.popleft()
+            for i in range(len(data)):
+                self.plot_buffer.append(data[i][:])
+
+        # # case: if buffer filled
+        # else:
+        #     for i in range(len(data[0])):
+        #         self.plot_buffer.popleft()
+        #         self.plot_buffer.append(data[:][i])
 
     async def send_plot_to_frontend(self):
         """Example of how to send server generated events to clients."""
@@ -102,7 +104,7 @@ class Server:
                 # print(np.array(self.plot_buffer)[0].shape)
                 await self.sio.emit('time series', {
                                                     'timestamp': time.time(),
-                                                    'value' : list(np.array(self.plot_buffer)[-1])
+                                                    'value' : np.array(self.plot_buffer)[-1].tolist()
                                                     })
             await self.sio.sleep(0.2)
 
