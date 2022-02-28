@@ -37,8 +37,9 @@ function FlashingPage() {
             // should get the prediction
         });
     }, []);
-
+    // "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const phase = 0.2415;
     return (
         <>
         <h1 style={{textAlign: "center"}}>Trial: {pred}</h1>
@@ -50,6 +51,7 @@ function FlashingPage() {
             freq={index + 1}
             ops={ops}
             fps={60}
+            phase={index * phase}
             key={index}
             />
             )
