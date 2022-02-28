@@ -72,8 +72,8 @@ class TCPParser: # The script contains one main class which handles DSI-Streamer
 
 						self.signal_log = np.append(self.signal_log,self.latest_packet_data,1)
 						self.time_log = np.append(self.time_log,self.latest_packet_data_timestamp,1)
-						# self.signal_log = self.signal_log[:,-100:]
-						# self.time_log = self.time_log[:,-100:]
+						self.signal_log = self.signal_log[:,-100:]
+						self.time_log = self.time_log[:,-100:]
 					## Non-data packet handling
 					if packet_header[0] == 5:
 						(event_code, event_node) = struct.unpack('>II',self.latest_packets[index][12:20])
@@ -109,12 +109,8 @@ class TCPParser: # The script contains one main class which handles DSI-Streamer
 		fig = plt.figure()
 
 		while True: # runtime < duration/refresh_rate:
-			# self.signal_log = self.signal_log[:,-1000:]
-			# self.time_log = self.time_log[:,-1000:]
-
-			# print(self.latest_packet_data.shape)
-			# print(self.latest_packet_data_timestamp.shape)
-
+			self.signal_log = self.signal_log[:,-1000:]
+			self.time_log = self.time_log[:,-1000:]
 			plt.clf()
 			try:
 				plt.plot(self.time_log.T,self.signal_log.T)

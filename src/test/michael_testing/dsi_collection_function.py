@@ -59,14 +59,60 @@ async def fetch_data():
     # ================================================================
     dsi_parser = TCPParser('localhost',8844)
     data_thread = threading.Thread(target=dsi_parser.parse_data)
-    # data_thread.daemon = True
+    data_thread.daemon = True
     data_thread.start()
+    file = open('./eeg.csv', 'w')
+    file.write('time, ch1, ch2, ch3, ch4, ch5, ch6, ch7\n')
+    file.close()
+
+    latest_signal_log = np.copy(dsi_parser.signal_log)
+    latest_time_log = np.copy(dsi_parser.time_log)
+    while latest_time_log[0,0] < 0.1:
+        latest_signal_log = np.copy(dsi_parser.signal_log)
+        latest_time_log = np.copy(dsi_parser.time_log)
+        dsi_parser.signal_log = dsi_parser.signal_log[:,-1:]
+        dsi_parser.time_log = dsi_parser.time_log[:,-1:]
+        await sio.sleep(0.5)  # provide window for other thread to run
+
     while True:
         # a = datetime.datetime.now()
         # s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
         # print(f'current trial {current_trial} -- {s}')
-        dsi_parser.signal_log = dsi_parser.signal_log[:,-1000:]
-        dsi_parser.time_log = dsi_parser.time_log[:,-1000:]
+        # dsi_parser.signal_log = dsi_parser.signal_log[:,-1000:]
+        # dsi_parser.time_log = dsi_parser.time_log[:,-1000:]
+        # print(np.array(dsi_parser.signal_log).shape)
+        # print(np.array(dsi_parser.time_log).shape)
+
+
+        # latest_signal_log = np.copy(dsi_parser.signal_log)
+        # latest_time_log = np.copy(dsi_parser.time_log)
+        # if latest_signal_log.shape[0] > 1: # if new data is appended
+        #     dsi_parser.signal_log = np.zeros((1,20))
+        #     dsi_parser.time_log = np.zeros((1,20))
+        #     latest_signal_log = latest_signal_log.T # put num time points before num channels
+        #     latest_time_log = latest_time_log.T
+        #     # print(np.concatenate((latest_time_log, latest_signal_log[:,:8]), axis=1).shape)
+        #     latest_data = np.concatenate((latest_time_log, latest_signal_log[:,:8]), axis=1)
+        #     with open('./eeg.csv', 'a') as csv_file: # 'a' for append
+        #         np.savetxt(csv_file, latest_data, delimiter=', ')
+        #     await sio.emit('receive data', latest_data.tolist()) # pretend we got 5 samples in buffer
+        
+        latest_signal_log = np.copy(dsi_parser.signal_log)[:,:-1].T
+        latest_time_log = np.copy(dsi_parser.time_log)[:,:-1].T
+        dsi_parser.signal_log = dsi_parser.signal_log[:,-1:]
+        dsi_parser.time_log = dsi_parser.time_log[:,-1:]
+        latest_data = np.concatenate((latest_time_log, latest_signal_log[:,:8]), axis=1)
+        with open('./eeg.csv', 'a') as csv_file: # 'a' for append
+            np.savetxt(csv_file, latest_data, delimiter=', ')
+        await sio.emit('receive data', latest_data.tolist())
+
+            # print(np.stack((latest_time_log,latest_signal_log)).shape)
+            # with open('./eeg.csv', 'a') as csv_file: # 'a' for append
+            #     np.savetxt(csv_file, fake_data, delimiter=', ')
+            # await sio.emit('receive data', fake_data.tolist()) # pretend we got 5 samples in buffer
+            # print(latest_signal_log.shape)
+            # print(latest_time_log.shape)
+
         await sio.sleep(0.1)  # provide window for other thread to run
 
 async def fetch_fake_data():
