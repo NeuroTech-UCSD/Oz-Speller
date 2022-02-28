@@ -45,6 +45,7 @@ function FlashingPage() {
             text={el}
             freq={index + 1}
             ops={ops}
+            fps={60}
             key={index}
             />
             )

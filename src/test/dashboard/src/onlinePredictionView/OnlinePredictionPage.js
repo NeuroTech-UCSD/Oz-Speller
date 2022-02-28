@@ -32,7 +32,7 @@ function OnlinePredictionPage() {
 
             // should get the prediction
         });
-    });
+    }, []);
 
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     return (
