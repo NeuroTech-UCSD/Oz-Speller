@@ -35,6 +35,7 @@ function OnlinePredictionPage() {
     }, []);
 
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const phase = 0.2415;
     return (
         <>
         <h1 style={{textAlign: "center"}}>Prediction: {pred}</h1>
@@ -45,6 +46,8 @@ function OnlinePredictionPage() {
             text={el}
             freq={index + 1}
             ops={ops}
+            fps={60}
+            phase={index * phase}
             key={index}
             />
             )
