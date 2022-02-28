@@ -30,7 +30,14 @@ class Server:
         print('All components are ready')
 
     async def get_config_handler(self, sid, data):
+        # parse data
+        data['SESSION_NUMBER'] = int(data['SESSION_NUMBER'])
+        data['INTER_TRIAL_DURATION'] = int(data['INTER_TRIAL_INTERVAL'])
+        data['NUM_TRIALS'] = int(data['NUM_TRIALS'])  # CHANGE TO NUM_BLOCKS!!!!!!
+        data['SAMPLING_FREQUENCY'] = int(data['SAMPLING_FREQUENCY'])
+        data['TRIAL_DURATION'] = int(data['TRIAL_DURATION'])
         self.config = data
+
         print(data)
 
     async def send_dsi_ready_signal(self, sid):
@@ -59,6 +66,8 @@ class Server:
         '''
         await self.sio.emit('start_flashing', data)  # Note: if start flashing has no delay, we can put change_trial
         # in a separate function and parallelize these two requests
+
+    async def change_dsi_trial(self, sid, data):
         await self.sio.emit('change_trial', data)
 
     async def receive_data(self, sid, data):
@@ -88,6 +97,8 @@ class Server:
         self.sio.on('calibration ready', self.send_calibration_ready_signal)
         self.sio.on('frontend ready', self.send_frontend_ready_signal)
         self.sio.on('generate trial', self.generate_trial)
+        self.sio.on('countdown done', self.change_dsi_trial)
+        self.sio.on('finished flashing', self.change_dsi_trial)
         self.sio.on('all components ready', self.check_components_ready)
         self.sio.on('receive data', self.receive_data)
         web.run_app(self.app, host='0.0.0.0', port=self.port)  # we're using local host here
