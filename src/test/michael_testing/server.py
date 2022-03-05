@@ -33,7 +33,7 @@ class Server:
         # parse data
         data['SESSION_NUMBER'] = int(data['SESSION_NUMBER'])
         data['INTER_TRIAL_DURATION'] = int(data['INTER_TRIAL_INTERVAL'])
-        data['NUM_TRIALS'] = int(data['NUM_TRIALS'])  # CHANGE TO NUM_BLOCKS!!!!!!
+        data['NUM_BLOCKS'] = int(data['NUM_BLOCKS'])  # CHANGE TO NUM_BLOCKS!!!!!!
         data['SAMPLING_FREQUENCY'] = int(data['SAMPLING_FREQUENCY'])
         data['TRIAL_DURATION'] = int(data['TRIAL_DURATION'])
         self.config = data
@@ -56,7 +56,11 @@ class Server:
     async def send_frontend_ready_signal(self, sid):
         self.frontend_ready = True
         print('frontend is ready')
-        return self.config
+        await self.send_frontend_data()
+    
+    async def send_frontend_data(self):
+        print("sending")
+        await self.sio.emit('frontend_config', self.config)
 
     async def generate_trial(self, sid, data):
         '''
@@ -69,6 +73,10 @@ class Server:
 
     async def change_dsi_trial(self, sid, data):
         await self.sio.emit('change_trial', data)
+
+    async def enable_can_go(self, sid, data):
+        if data is True:
+            await self.sio.emit('next trial', True)
 
     async def receive_data(self, sid, data):
         '''
@@ -97,8 +105,10 @@ class Server:
         self.sio.on('calibration ready', self.send_calibration_ready_signal)
         self.sio.on('frontend ready', self.send_frontend_ready_signal)
         self.sio.on('generate trial', self.generate_trial)
+        self.sio.on('countdown start', self.change_dsi_trial)
         self.sio.on('countdown done', self.change_dsi_trial)
         self.sio.on('finished flashing', self.change_dsi_trial)
+        self.sio.on('get next trial', self.enable_can_go)
         self.sio.on('all components ready', self.check_components_ready)
         self.sio.on('receive data', self.receive_data)
         web.run_app(self.app, host='0.0.0.0', port=self.port)  # we're using local host here
