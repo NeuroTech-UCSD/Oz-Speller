@@ -59,6 +59,7 @@ async def send_trial():
         tic = time.time()
         await sio.emit('generate trial', characters[random_index])
         await asyncio.sleep(trial_duration + inter_trial_interval)
+        await sio.call('next trial')
 
 
 async def main():

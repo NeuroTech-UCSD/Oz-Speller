@@ -6,6 +6,8 @@ import datetime
 sio = socketio.AsyncClient()
 PORT = 4002
 global current_trial
+global prev
+prev = datetime.datetime.now()
 current_trial = '*'  # can replace with 0
 
 
@@ -28,8 +30,13 @@ async def disconnect():
 @sio.event
 async def change_trial(data):
     global current_trial
+    global prev
     current_trial = data  # data is just a char
     a = datetime.datetime.now()
+    diff = a - prev
+    diff_s = "%s" % (diff.total_seconds())
+    print(diff_s)
+    prev = a
     s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
     print(f'trial changed to \"{data}\" -- {s}')
 
