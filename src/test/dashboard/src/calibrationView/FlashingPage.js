@@ -4,50 +4,27 @@ import './FlashingPage.css';
 import socketIOClient from "socket.io-client";
 
 function FlashingPage() {
-    const [ops, setOps] = useState(false);
     const [pred, setPred] = useState("");
-    const [inter, setInter] = useState(0);
 
     let socket = null;
-    let config = null;
 
     useEffect(() => {
-        let flashing_promise = null;
-        let canTrial = true;
         socket = socketIOClient("http://localhost:4002");
         socket.emit('frontend ready');
-
-        socket.on('frontend_config', (data) => {
-            config = data;
-        });
         
         socket.on('start_flashing', (trial) => {
-            socket.emit('get next trial', false)
+            let curr = new Date();
+            console.log("start flashing:", curr.getMinutes() + ":" + curr.getSeconds() + "." + curr.getMilliseconds())
+
             setPred(trial);
-        
-            var now = new Date();
-            console.log("finished flashing:" + now.getMinutes() + ":" + now.getSeconds() + "." + now.getMilliseconds());
-            socket.emit("countdown start", "*")
-            const countdown_promise = new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    resolve('done')
-                }, config["INTER_TRIAL_INTERVAL"]);
-            })
-
-            countdown_promise.then(r => {
-                var now = new Date();
-                console.log("finished countdown:" + now.getMinutes() + ":" + now.getSeconds() + "." + now.getMilliseconds());
-
-                setOps(true);
-                socket.emit("countdown done", trial)
-
-                setTimeout(() => {
-                    setOps(false);  // * is used as the null character
-                    var now = new Date();
-                    socket.emit('get next trial', true)
-                }, config["TRIAL_DURATION"]);
-            })
         });
+
+        socket.on('stop_flashing', () => {
+            let curr = new Date();
+            console.log("stop flashing:", curr.getMinutes() + ":" + curr.getSeconds() + "." + curr.getMilliseconds())
+
+            setPred("");
+        })
     }, []);
     // "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -57,11 +34,21 @@ function FlashingPage() {
         <h1 style={{textAlign: "center"}}>Trial: {pred}</h1>
         <div className="FlashingComponent">
         {
+            pred === "" ?
+            
+            [...characters].map((el, index) => 
+            <div key={index} className="box">
+            { el }
+            </div>
+            )
+
+            :
+            
             [...characters].map((el, index) => 
             <FlickerBox 
             text={el}
             freq={index + 1}
-            ops={ops}
+            ops={true}
             fps={60}
             phase={index * phase}
             key={index}

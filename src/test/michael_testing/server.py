@@ -70,6 +70,10 @@ class Server:
         '''
         await self.sio.emit('start_flashing', data)  # Note: if start flashing has no delay, we can put change_trial
         # in a separate function and parallelize these two requests
+        await self.change_dsi_trial(sid, data)
+
+    async def stop_trial(self, sid, data):
+        await self.sio.emit('stop_flashing', data)
 
     async def change_dsi_trial(self, sid, data):
         await self.sio.emit('change_trial', data)
@@ -105,9 +109,7 @@ class Server:
         self.sio.on('calibration ready', self.send_calibration_ready_signal)
         self.sio.on('frontend ready', self.send_frontend_ready_signal)
         self.sio.on('generate trial', self.generate_trial)
-        self.sio.on('countdown start', self.change_dsi_trial)
-        self.sio.on('countdown done', self.change_dsi_trial)
-        self.sio.on('finished flashing', self.change_dsi_trial)
+        self.sio.on('trial end', self.stop_trial)
         self.sio.on('get next trial', self.enable_can_go)
         self.sio.on('all components ready', self.check_components_ready)
         self.sio.on('receive data', self.receive_data)

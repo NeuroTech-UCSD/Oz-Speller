@@ -48,6 +48,7 @@ async def ready():
 
 
 async def fetch_data():
+    global current_trial
     '''
     This function will continue fetch data from dsi headset and \
     (1) write the data to the csv
@@ -65,6 +66,8 @@ async def fetch_data():
         a = datetime.datetime.now()
         s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
         print(f'current trial {current_trial} -- {s}')
+        if (current_trial != '*'):
+            current_trial = '*'
         await sio.sleep(2)  # provide window for other thread to run
 
 

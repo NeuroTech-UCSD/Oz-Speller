@@ -58,8 +58,9 @@ async def send_trial():
             f'calibration manager: send trial {characters[random_index]} to server, time diff since last trial: {time.time() - tic:.3f}, {s}')
         tic = time.time()
         await sio.emit('generate trial', characters[random_index])
-        await asyncio.sleep(trial_duration + inter_trial_interval)
-        await sio.call('next trial')
+        await asyncio.sleep(trial_duration)
+        await sio.emit('trial end', True)
+        await asyncio.sleep(inter_trial_interval)
 
 
 async def main():
