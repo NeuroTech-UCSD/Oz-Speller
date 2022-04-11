@@ -13,3 +13,7 @@
 
 # Distribution / packaging
 env/
+
+# Idea files
+.idea/*
+
