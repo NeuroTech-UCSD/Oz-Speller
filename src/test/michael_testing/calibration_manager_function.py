@@ -36,7 +36,7 @@ async def ready():
 async def send_trial():
     print('calibration manager initiated -- Start sending trials ...')
     # ============= use config instead of hard coding ================
-    num_trials = config["NUM_TRIALS"]
+    num_blocks = config["NUM_BLOCKS"]
     trial_duration = config["TRIAL_DURATION"] / 1000  # convert to seconds
     inter_trial_interval = config["INTER_TRIAL_INTERVAL"] / 1000  # convert to seconds
     # ================================================================
@@ -45,7 +45,7 @@ async def send_trial():
     characters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
                   'U', 'V', 'W', 'X', 'Y', 'Z']
     stored_values = []
-    for i in range(num_trials):
+    for i in range(num_blocks):
         a = datetime.datetime.now()
         random_index = random.randint(0, len(characters) - 1)
         while random_index in stored_values:
@@ -58,7 +58,9 @@ async def send_trial():
             f'calibration manager: send trial {characters[random_index]} to server, time diff since last trial: {time.time() - tic:.3f}, {s}')
         tic = time.time()
         await sio.emit('generate trial', characters[random_index])
-        await asyncio.sleep(trial_duration + inter_trial_interval)
+        await asyncio.sleep(trial_duration)
+        await sio.emit('trial end', True)
+        await asyncio.sleep(inter_trial_interval)
 
 
 async def main():

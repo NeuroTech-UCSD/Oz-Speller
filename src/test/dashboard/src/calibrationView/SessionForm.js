@@ -72,11 +72,11 @@ class SessionForm extends Component {
                         onChange={this.handleChange}
                     />
                 </label>
-                <label>Number of Trials:
+                <label>Number of Blocks:
                     <input 
                         type="number" 
-                        name="NUM_TRIALS" 
-                        defaultValue={this.config.NUM_TRIALS}
+                        name="NUM_BLOCKS" 
+                        defaultValue={this.config.NUM_BLOCKS}
                         onChange={this.handleChange}
                     />
                 </label>

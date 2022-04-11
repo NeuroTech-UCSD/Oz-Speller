@@ -9,6 +9,8 @@ from dsi import TCPParser
 sio = socketio.AsyncClient()
 PORT = 4002
 global current_trial
+global prev
+prev = datetime.datetime.now()
 current_trial = '*'  # can replace with 0
 
 
@@ -31,8 +33,13 @@ async def disconnect():
 @sio.event
 async def change_trial(data):
     global current_trial
+    global prev
     current_trial = data  # data is just a char
     a = datetime.datetime.now()
+    diff = a - prev
+    diff_s = "%s" % (diff.total_seconds())
+    print(diff_s)
+    prev = a
     s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
     print(f'trial changed to \"{data}\" -- {s}')
 
@@ -44,6 +51,7 @@ async def ready():
 
 
 async def fetch_data():
+    global current_trial
     '''
     This function will continue fetch data from dsi headset and \
     (1) write the data to the csv
@@ -75,14 +83,12 @@ async def fetch_data():
         await sio.sleep(0.5)  # provide window for other thread to run
 
     while True:
-        # a = datetime.datetime.now()
-        # s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
-        # print(f'current trial {current_trial} -- {s}')
-        # dsi_parser.signal_log = dsi_parser.signal_log[:,-1000:]
-        # dsi_parser.time_log = dsi_parser.time_log[:,-1000:]
-        # print(np.array(dsi_parser.signal_log).shape)
-        # print(np.array(dsi_parser.time_log).shape)
-
+        a = datetime.datetime.now()
+        s = "%s:%s.%s" % (a.minute, a.second, str(a.microsecond)[:3])
+        print(f'current trial {current_trial} -- {s}')
+        if (current_trial != '*'):
+            current_trial = '*'
+        await sio.sleep(2)  # provide window for other thread to run
 
         # latest_signal_log = np.copy(dsi_parser.signal_log)
         # latest_time_log = np.copy(dsi_parser.time_log)

@@ -4,4 +4,12 @@
     min-height: 100vh;
     display: flex;
     flex-wrap: wrap;
-  }
+}
+
+.box {
+  background-color: black;
+  color: white;
+  font-size: 150px;
+  font-weight: bold;
+  width: 200px;
+}
