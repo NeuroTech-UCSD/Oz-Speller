@@ -1,0 +1,163 @@
+PS C:\Users\simon\Documents\TNT\VEP-App> ======== Running on http://0.0.0.0:4002 ========
+(Press CTRL+C to quit)
+frontend is ready
+sending
+{'SESSION_NUMBER': 0, 'BREAK_DURATION': 20, 'CHANNELS': ['P4'], 'INTER_TRIAL_INTERVAL': 1000, 'NUM_BLOCKS': 100, 'SAMPLING_FREQUENCY': 100, 'STARTUP_DELAY': 0, 'TARGET_FREQUENCIES': {'a': 15, 'b': 14}, 'TRIAL_DURATION': 4000, 'SUBJECT_NAME': 'Simon', 'INTER_TRIAL_DURATION': 1000}
+connected
+calibration is ready
+connected
+dsi is ready
+dsi collection initiated -- Start recording data ...
+Event code = 9  Node = 1
+Montage = LE,F4,C4,P4,P3,C3,F3,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,TRG
+Event code = 12  Node = 1
+Event code = 10  Node = 1
+Mains,Sample = 60,300
+Event code = 2  Node = 1
+current trial * -- 48:39.710
+All components are ready
+calibration manager initiated -- Start sending trials ...
+calibration manager: send trial L to server, time diff since last trial: 0.000, 48:40.490
+5.367237
+trial changed to "L" -- 48:40.490
+current trial L -- 48:41.835
+current trial * -- 48:43.951
+calibration manager: send trial O to server, time diff since last trial: 5.006, 48:45.497
+5.008302
+trial changed to "O" -- 48:45.499
+current trial O -- 48:46.750
+current trial * -- 48:48.203
+current trial * -- 48:50.329
+calibration manager: send trial I to server, time diff since last trial: 5.039, 48:50.536
+5.039537
+trial changed to "I" -- 48:50.538
+current trial I -- 48:52.448
+current trial * -- 48:54.580
+calibration manager: send trial F to server, time diff since last trial: 5.018, 48:55.554
+5.018536
+trial changed to "F" -- 48:55.557
+current trial F -- 48:56.701
+current trial * -- 48:58.818
+calibration manager: send trial R to server, time diff since last trial: 5.018, 49:0.571
+5.017541
+trial changed to "R" -- 49:0.574
+current trial R -- 49:0.916
+current trial * -- 49:3.473
+current trial * -- 49:5.175
+calibration manager: send trial A to server, time diff since last trial: 4.999, 49:5.570
+4.997827
+trial changed to "A" -- 49:5.572
+current trial A -- 49:7.282
+current trial * -- 49:9.396
+calibration manager: send trial C to server, time diff since last trial: 5.028, 49:10.598
+5.029248
+trial changed to "C" -- 49:10.601
+current trial C -- 49:11.513
+current trial * -- 49:13.624
+calibration manager: send trial G to server, time diff since last trial: 5.020, 49:15.618
+5.029896
+trial changed to "G" -- 49:15.631
+current trial G -- 49:15.745
+current trial * -- 49:17.890
+current trial * -- 49:20.344
+calibration manager: send trial S to server, time diff since last trial: 5.029, 49:20.647
+5.018799
+trial changed to "S" -- 49:20.650
+current trial S -- 49:22.121
+current trial * -- 49:24.254
+calibration manager: send trial V to server, time diff since last trial: 5.016, 49:25.663
+5.01812
+trial changed to "V" -- 49:25.668
+current trial V -- 49:26.392
+current trial * -- 49:28.518
+current trial * -- 49:30.648
+calibration manager: send trial Y to server, time diff since last trial: 5.016, 49:30.679
+5.014177
+trial changed to "Y" -- 49:30.682
+current trial Y -- 49:32.784
+current trial * -- 49:34.876
+calibration manager: send trial P to server, time diff since last trial: 5.013, 49:35.693
+5.01305
+trial changed to "P" -- 49:35.695
+current trial P -- 49:37.510
+current trial * -- 49:39.131
+calibration manager: send trial N to server, time diff since last trial: 5.002, 49:40.694
+5.007707
+trial changed to "N" -- 49:40.703
+current trial N -- 49:41.236
+current trial * -- 49:43.364
+current trial * -- 49:45.505
+calibration manager: send trial D to server, time diff since last trial: 5.032, 49:45.726
+5.030684
+trial changed to "D" -- 49:45.734
+current trial D -- 49:47.628
+current trial * -- 49:49.729
+calibration manager: send trial B to server, time diff since last trial: 5.012, 49:50.737
+5.006639
+trial changed to "B" -- 49:50.740
+current trial B -- 49:51.861
+current trial * -- 49:53.994
+calibration manager: send trial Q to server, time diff since last trial: 5.032, 49:55.770
+5.033339
+trial changed to "Q" -- 49:55.774
+current trial Q -- 49:56.131
+current trial * -- 49:58.242
+current trial * -- 50:0.375
+calibration manager: send trial U to server, time diff since last trial: 5.015, 50:0.785
+5.014979
+trial changed to "U" -- 50:0.789
+current trial U -- 50:2.497
+current trial * -- 50:4.627
+calibration manager: send trial Z to server, time diff since last trial: 5.015, 50:5.799
+5.017684
+trial changed to "Z" -- 50:5.806
+current trial Z -- 50:6.743
+current trial * -- 50:8.840
+calibration manager: send trial E to server, time diff since last trial: 5.014, 50:10.813
+5.0087
+trial changed to "E" -- 50:10.815
+current trial E -- 50:10.976
+current trial * -- 50:13.922
+current trial * -- 50:15.213
+calibration manager: send trial J to server, time diff since last trial: 4.999, 50:15.812
+5.008336
+trial changed to "J" -- 50:15.823
+current trial J -- 50:17.303
+current trial * -- 50:19.418
+calibration manager: send trial X to server, time diff since last trial: 5.013, 50:20.826
+5.005172
+trial changed to "X" -- 50:20.829
+current trial X -- 50:21.524
+current trial * -- 50:23.618
+current trial * -- 50:25.739
+calibration manager: send trial W to server, time diff since last trial: 5.022, 50:25.847
+5.023831
+trial changed to "W" -- 50:25.852
+current trial W -- 50:27.865
+current trial * -- 50:29.993
+calibration manager: send trial H to server, time diff since last trial: 4.996, 50:30.844
+4.993231
+trial changed to "H" -- 50:30.846
+current trial H -- 50:32.114
+current trial * -- 50:34.247
+calibration manager: send trial T to server, time diff since last trial: 5.013, 50:35.856
+5.015737
+trial changed to "T" -- 50:35.861
+current trial T -- 50:36.363
+current trial * -- 50:38.495
+current trial * -- 50:40.645
+calibration manager: send trial K to server, time diff since last trial: 5.008, 50:40.865
+5.005129
+trial changed to "K" -- 50:40.866
+current trial K -- 50:42.746
+current trial * -- 50:44.860
+calibration manager: send trial M to server, time diff since last trial: 5.006, 50:45.870
+5.007555
+trial changed to "M" -- 50:45.874
+current trial M -- 50:46.966
+current trial * -- 50:49.595
+current trial * -- 50:51.170
+current trial * -- 50:53.306
+current trial * -- 50:55.431
+current trial * -- 50:57.544
+current trial * -- 50:59.673
