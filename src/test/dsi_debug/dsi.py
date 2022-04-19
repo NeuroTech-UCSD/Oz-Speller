@@ -1,138 +1,305 @@
-# DSI_to_Python v.1.0 BETA
-# The following script can be used to receive DSI-Streamer Data Packets through DSI-Streamer's TCP/IP Protocol.
-# It contains an example parser for converting packet bytearrays to their corresponding formats described in the TCP/IP Socket Protocol Documentation (https://wearablesensing.com/downloads/TCPIP%20Support_20190924.zip).
-# The script involves opening a server socket on DSI-Streamer and connecting a client socket on Python.
+#!/usr/bin/env python
+"""
+This is a Python interface to the Dry Sensor Interface (DSI) headset by Wearable Sensing
+LLC.  It uses the DSI API, loaded from the libDSI dynamic library via ctypes.  The dynamic
+library must be in the same directory as this Python file.  Function prototypes are parsed
+automatically at import time from DSI.h, so DSI.h must also be in the same directory.
 
-# As of v.1.0, the script outputs EEG data and timestamps to the command window. In addition, the script is able to plot the data in realtime.
-# Keep in mind, however, that the plot functionality is only meant as a demonstration and therefore does not adhere to any current standards.
-# The plot function plots the signals on one graph, unlabeled.
-# To verify correct plotting, one can introduce an artifact in the data and observe its effects on the plots.
+Most of the C functions are reinterpreted as object methods:  this module defines
+classes Headset, Source and Channel to wrap them, and adds two helper methods:
+Headset.Sources() and Headset.Channels().  It also defines various global functions,
+and the decorators SampleCallback and MessageCallback.  Examples of how to use the
+decorators, and a minimal Test() function, are provided at the bottom of this file.
 
-# The sample code is not certified to any specific standard. It is not intended for clinical use.
-# The sample code and software that makes use of it, should not be used for diagnostic or other clinical purposes.  
-# The sample code is intended for research use and is provided on an "AS IS"  basis.  
-# WEARABLE SENSING, INCLUDING ITS SUBSIDIARIES, DISCLAIMS ANY AND ALL WARRANTIES
+Normal usage would be to import this file and use the classes and functions the module
+provides. As a quick test, the Test() function can be run by executing this file directly,
+with the serial port address as the first command-line argument, and (optionally) the
+reference Source name or the word 'impedances' as the second.
+
+The Python source file also contains copyright and disclaimer information.
+"""
+
+# This file is part of the Application Programmer's Interface (API) for Dry Sensor Interface
+# (DSI) EEG systems by Wearable Sensing. The API consists of code, headers, dynamic libraries
+# and documentation.  The API allows software developers to interface directly with DSI
+# systems to control and to acquire data from them.
+# 
+# The API is not certified to any specific standard. It is not intended for clinical use.
+# The API, and software that makes use of it, should not be used for diagnostic or other
+# clinical purposes.  The API is intended for research use and is provided on an "AS IS"
+# basis.  WEARABLE SENSING, INCLUDING ITS SUBSIDIARIES, DISCLAIMS ANY AND ALL WARRANTIES
 # EXPRESSED, STATUTORY OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTIES OF
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT OR THIRD PARTY RIGHTS.
-#
-# Copyright (c) 2014-2020 Wearable Sensing LLC
-
-import socket, struct, time
-import numpy as np
-import matplotlib.pyplot as plt
-import threading
-
-class TCPParser: # The script contains one main class which handles DSI-Streamer data packet parsing.
-
-	def __init__(self, host, port):
-		self.host = host
-		self.port = port
-		self.done = False
-		self.data_log = b''
-		self.latest_packets = []
-		self.latest_packet_headers = []
-		self.latest_packet_data = np.zeros((1,1))
-		self.signal_log = np.zeros((1,20))
-		self.time_log = np.zeros((1,20))
-		self.montage = []
-		self.fsample = 0
-		self.fmains = 0
-
-		self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-		self.sock.connect((self.host,self.port))
-		
-	def parse_data(self):
-		
-		# parse_data() receives DSI-Streamer TCP/IP packets and updates the signal_log and time_log attributes
-		# which capture EEG data and time data, respectively, from the last 100 EEG data packets (by default) into a numpy array.
-		while not self.done:
-			data = self.sock.recv(921600)
-			self.data_log += data
-			if self.data_log.find(b'@ABCD',0,len(self.data_log)) != -1:										# The script looks for the '@ABCD' header start sequence to find packets.
-				for index,packet in enumerate(self.data_log.split(b'@ABCD')[1:]):							# The script then splits the inbound transmission by the header start sequence to collect the individual packets.
-					self.latest_packets.append(b'@ABCD' + packet)
-				for packet in self.latest_packets:
-					self.latest_packet_headers.append(struct.unpack('>BHI',packet[5:12]))
-				self.data_log = b''
+# 
+# (c) @YEARS@ Wearable Sensing LLC
 
 
-				for index, packet_header in enumerate(self.latest_packet_headers):		
-					# For each packet in the transmission, the script will append the signal data and timestamps to their respective logs.
-					if packet_header[0] == 1:
-						if np.shape(self.signal_log)[0] == 1:												# The signal_log must be initialized based on the headset and number of available channels.
-							self.signal_log = np.zeros((int(len(self.latest_packets[index][23:])/4),20))
-							self.time_log = np.zeros((1,20))
-							self.latest_packet_data = np.zeros((int(len(self.latest_packets[index][23:])/4),1))
+# TODO:  enum
 
-						self.latest_packet_data = np.reshape(struct.unpack('>%df'%(len(self.latest_packets[index][23:])/4),self.latest_packets[index][23:]),(len(self.latest_packet_data),1))
-						self.latest_packet_data_timestamp = np.reshape(struct.unpack('>f',self.latest_packets[index][12:16]),(1,1))
+__all__ = [
+	'Headset', 'Source', 'Channel',
+	'SampleCallback', 'MessageCallback',
+	'DSIException',
+	'IfStringThenRawString', 'IfStringThenNormalString',
+]
+# global DSI_* functions from the dylib will be appended to this
 
-						# print("Timestamps: " + str(self.latest_packet_data_timestamp))
-						# print("Signal Data: " + str(self.latest_packet_data))
+import os, sys, ctypes
+if sys.version >= '3': unicode = str; basestring = ( bytes, unicode )  # bytes is already defined, unicode is not
+else: bytes = str # unicode is already defined, bytes is not
+def IfStringThenRawString( x ):
+	"""
+	A string is likely to be either raw bytes already, or utf-8-encoded unicode. A simple
+	quoted string literal may or may not be raw bytes, depending on Python version. This
+	is a problem.
+	
+	If x is a string then, regardless of Python version and starting format, return the
+	"raw bytes" version of it so that we can send it over a serial port, pass it via
+	ctypes to a C function, etc.
+	
+	If x is not a string, return it unchanged (so you can use this function to filter a
+	whole list of arguments agnostically).
+	
+	See also IfStringThenNormalString()
+	"""
+	if isinstance( x, unicode ): x = x.encode( 'utf-8' )
+	return x
+def IfStringThenNormalString( x ):
+	"""
+	A string is likely to be either raw bytes or utf-8-encoded unicode. Depending on
+	Python version, either the raw bytes or the unicode might be treated as a "normal"
+	string (i.e. the type you get from an ordinary quoted string literal, and the type
+	can be print()ed without adornment). This is a problem.
+	
+	If x is a string then, regardless of Python version and starting format, return the 
+	"normal string" version of it so that we can print it, use it for formatting, make an
+	Exception out of it, get on with our lives, etc.
+	
+	If x is not a string, return it unchanged (so you can feel free to use this function
+	to filter a whole list of arguments agnostically).
+	
+	See also IfStringThenRawString()
+	"""
+	if str is not bytes and isinstance( x, bytes ): x = x.decode( 'utf-8' )
+	return x
 
-						self.signal_log = np.append(self.signal_log,self.latest_packet_data,1)
-						self.time_log = np.append(self.time_log,self.latest_packet_data_timestamp,1)
-						self.signal_log = self.signal_log[:,-100:]
-						self.time_log = self.time_log[:,-100:]
-					## Non-data packet handling
-					if packet_header[0] == 5:
-						(event_code, event_node) = struct.unpack('>II',self.latest_packets[index][12:20])
-						if len(self.latest_packets[index])>24:
-							message_length = struct.unpack('>I',self.latest_packets[index][20:24])[0]
-						print("Event code = " + str(event_code) + "  Node = " + str(event_node))
-						if event_code == 9:
-							montage = self.latest_packets[index][24:24+message_length].decode()
-							montage = montage.strip()
-							print("Montage = " + montage)
-							self.montage = montage.split(',')
-						if event_code == 10:
-							frequencies = self.latest_packets[index][24:24+message_length].decode()
-							print("Mains,Sample = "+ frequencies)
-							mains,sample = frequencies.split(',')
-							self.fsample = float(sample)
-							self.fmains = float(mains)
-			self.latest_packets = []
-			self.latest_packet_headers = []
 
-	def example_plot(self):
-
-		# example_plot() uses the threading Python library and matplotlib to plot the EEG data in realtime. 
-		# The plots are unlabeled but users can refer to the TCP/IP Socket Protocol Documentation to understand how to discern the different plots given their indices.
-		# Ideally, each EEG plot should have its own subplot but for demonstrative purposes, they are all plotted on the same figure.
-		data_thread = threading.Thread(target=self.parse_data)
-		data_thread.start()
-
-		refresh_rate = 0.03
-		duration = 60	# The default plot duration is 60 seconds.
-		runtime = 0
-
-		fig = plt.figure()
-
-		while True: # runtime < duration/refresh_rate:
-			# self.signal_log = self.signal_log[:,-1000:]
-			# self.time_log = self.time_log[:,-1000:]
-
-			# print(self.latest_packet_data.shape)
-			# print(self.latest_packet_data_timestamp.shape)
-
-			plt.clf()
-			try:
-				plt.plot(self.time_log.T,self.signal_log.T)
+class Headset:
+	def __init__( self, arg=None ):
+		self.ptr = arg
+		self.__needs_cleanup = False
+		if arg is None or isinstance( arg, basestring ): # treat arg as port specifier string rather than a pointer
+			self.ptr = dll.DSI_Headset_New( IfStringThenRawString( arg ) )
+			self.__needs_cleanup = True
+	def __del__( self ):
+		if self.__needs_cleanup:
+			try: dll.DSI_Headset_Delete( self.ptr )
 			except: pass
-			plt.gca().legend(self.montage)
-			plt.xlabel('Timestamp')
-			plt.ylabel('Peak-to-Peak uV')
-			plt.title('DSI-Streamer TCP/IP EEG Sensor Data Output')
-			plt.pause(refresh_rate)
-			runtime += 1
-		plt.show()
+			else: self.__needs_cleanup = False
+	def Sources( self ):  return [ self.GetSourceByIndex( i )  for i in range( self.GetNumberOfSources()  ) ]
+	def Channels( self ): return [ self.GetChannelByIndex( i ) for i in range( self.GetNumberOfChannels() ) ]
+	
+class Source:
+	def __init__( self, ptr ): self.ptr = ptr
 
-		self.done = True
-		data_thread.join()
+class Channel:
+	def __init__( self, ptr ): self.ptr = ptr
 
+class ProcessingStage:
+	def __init__( self, ptr ): self.ptr = ptr
+
+class DSIException( Exception ): pass
+
+
+SampleCallback  = ctypes.CFUNCTYPE( None,            ctypes.c_void_p, ctypes.c_double, ctypes.c_void_p )
+MessageCallback = ctypes.CFUNCTYPE( ctypes.c_int,    ctypes.c_char_p, ctypes.c_int )
+
+@MessageCallback
+def NullMessageCallback( msg, lvl=0 ): return 1
+
+@SampleCallback
+def NullSampleCallback( headsetPtr, packetTime, userData ): pass
+
+__allprototypes__ = []
+def LoadAPI( dllname = None ):
+	import platform, re, inspect, ctypes.util
+
+	if dllname == None:
+		uname = platform.system()
+		machine = platform.machine().lower()
+		if machine.startswith( 'armv' ): machine = machine.rstrip( 'l' )
+		try: maxsize = sys.maxsize    # not available in Python 2.5
+		except: maxsize = sys.maxint  # not available in Python 3
+		executable_architecture= '64bit' if maxsize > 2 ** 32 else '32bit'
+		# we must catch the case of 32-bit Python running on 64-bit machine, so we're interested
+		# in this more than the underlying platform.machine(). And for some reason the official
+		# python.org docs recommend using sys.maxsize in this way rather than using
+		# platform.architecture()[0]
 		
-if __name__ == "__main__":
+		if not machine or machine in [ 'i386', 'x86_64', 'amd64' ]:
+			#arch = executable_architecture
+			arch = 'i386' if executable_architecture.startswith( '32' ) else 'x86_64'
+		else:
+			arch = machine
+		
+		if   uname.lower().startswith( 'win' ): dllxtn = '.dll'
+		elif uname.lower().startswith( 'darwin' ): dllxtn = '.dylib'
+		else: dllxtn = '.so'
+		dllname = 'libDSI-' + uname + '-' + arch + dllxtn
+	
+	headername = 'DSI.h'
+	
+	global dllpath, headerpath	
+	whereami = os.path.dirname( os.path.abspath( inspect.getfile( inspect.currentframe() ) ) )
+	dllpath = ctypes.util.find_library( dllname )  # try the usual places first: current working dir, then $DYLD_LIBRARY_PATH and friends (posix) or %PATH% (Windows)
+	if dllpath == None: dllpath = os.path.join( whereami, dllname ) # if failed, try right next to this .py file
+	if not os.path.isfile( dllpath ): dllpath = None
+	if dllpath == None: raise OSError( "failed to find dynamic library " + dllname )
+	dllpath = os.path.abspath( dllpath )
+	whereisdll = os.path.dirname( dllpath )
+	dll = ctypes.CDLL( dllpath )
+	headerpath = os.path.join( whereisdll, headername )  # expect to find header next to dynamic library, wherever it was
+	if not os.path.isfile( headerpath ): raise OSError( "failed to find header %s in directory %s" % ( headername, whereisdll ) )
+	
+	prototypes = [ line.split( ' , ' ) for line in open( headerpath ).readlines() if line.strip().startswith( 'DSI_API_FUNC\x28' ) ]
 
-	# The script will automatically run the example_plot() method if not called from another script.
-	tcp = TCPParser('localhost',8844)
-	tcp.example_plot()
+	ctypetypes = {
+		'DSI_Headset'         : ctypes.c_void_p,
+		'DSI_Source'          : ctypes.c_void_p,
+		'DSI_Channel'         : ctypes.c_void_p,
+		'DSI_ProcessingStage' : ctypes.c_void_p,
+		'void *'              : ctypes.c_void_p,
+		'const void *'        : ctypes.c_void_p,
+		'const char *'        : ctypes.c_char_p,
+		'size_t'              : ctypes.c_size_t,
+		'bool_t'              : getattr( ctypes, 'c_bool', ctypes.c_int ),
+		'int'                 : ctypes.c_int,
+		'unsigned int'        : ctypes.c_uint,
+		'double'              : ctypes.c_double,
+		'void'                : None,
+		'DSI_MessageCallback' : MessageCallback,
+		'DSI_SampleCallback'  : SampleCallback,
+		'DSI_SourceSelection' : ctypes.c_int,
+	}
+
+	classes = { 'DSI_Headset' : Headset, 'DSI_Source': Source, 'DSI_Channel': Channel, 'DSI_ProcessingStage': ProcessingStage }
+
+	def wrapfunction( funcptr, outputClass, doc ):
+		def function( *args ):
+			args = [ IfStringThenRawString( arg ) for arg in args ]
+			output = funcptr( *args )
+			err = dll.DSI_ClearError()
+			if err: raise( DSIException( IfStringThenNormalString( err ) ) )
+			if outputClass: output = outputClass( output )
+			return IfStringThenNormalString( output )
+		function.__doc__ = doc
+		return function
+	
+	def wrapmethod( funcptr, outputClass, doc ):
+		def method( self, *args ):
+			args = [ IfStringThenRawString( arg ) for arg in args ]
+			output = funcptr( self.ptr, *args )
+			err = dll.DSI_ClearError()
+			if err: raise( DSIException( IfStringThenNormalString( err ) ) )
+			if outputClass: output = outputClass( output )
+			return IfStringThenNormalString( output )
+		method.__doc__ = doc
+		return method
+
+	globalFuncs = {}
+	
+	def clean( s ): return re.sub( r'\/\*.*\*\/', '', s ).strip()
+	
+	for prototype in prototypes:
+		
+		restype = clean( prototype[ 0 ].split( ' ', 1 )[ 1 ] )
+		funcname = clean( prototype[ 1 ] )
+		args = clean( prototype[ 2 ] )
+		doc = restype + ' ' + funcname + args + ';'
+		__allprototypes__.append( doc )
+		args = args.strip( '()' ).split( ',' )
+		funcptr = getattr( dll, funcname )
+		funcptr.restype = ctypetypes[ restype ]
+		outputClass = classes.get( restype, None )
+		for prefix, cls in classes.items():
+			if funcname.startswith( prefix + '_' ):
+				methodname = funcname[ len( prefix ) + 1 : ]
+				setattr( cls, methodname, wrapmethod( funcptr, outputClass, doc ) )
+				break
+		else:
+			if funcname.startswith( 'DSI_' ): funcname = funcname[ 4 : ]
+			globalFuncs[ funcname ] = wrapfunction( funcptr, outputClass, doc )
+		args = [ arg.strip().rsplit( ' ', 1 ) for arg in args ]
+		if args != [ [ 'void' ] ]:  funcptr.argtypes = tuple( [ ctypetypes[ arg[ 0 ].strip() ] for arg in args ] )	
+	return dll, globalFuncs
+
+dll, globalFuncs = LoadAPI()	
+locals().update( globalFuncs )
+__all__ += globalFuncs.keys()
+del globalFuncs
+del LoadAPI
+del Headset.New    # only Headset.__init__() should be calling DSI_Headset_New()
+del Headset.Delete # only Headset.__del__() should be calling DSI_Headset_Delete()
+del os, sys, ctypes
+
+
+#########################################################################################
+##### Example code ######################################################################
+#########################################################################################
+
+import sys
+
+@MessageCallback
+def ExampleMessageCallback( msg, lvl=0 ):
+	if lvl <= 3:  # ignore messages at debugging levels higher than 3
+		print( "DSI Message (level %d): %s" % ( lvl, IfStringThenNormalString( msg ) ) )
+	return 1
+	
+@SampleCallback
+def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
+	h = Headset( headsetPtr )
+	strings = [ '%s=%+08.2f' % ( IfStringThenNormalString( ch.GetName() ), ch.ReadBuffered() ) for ch in h.Channels() ]
+	print( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) )
+	sys.stdout.flush()
+	
+@SampleCallback
+def ExampleSampleCallback_Impedances( headsetPtr, packetTime, userData ):
+	h = Headset( headsetPtr )
+	fmt = '%s = %5.3f'
+	strings = [ fmt % ( IfStringThenNormalString( src.GetName() ), src.GetImpedanceEEG() ) for src in h.Sources() if src.IsReferentialEEG() and not src.IsFactoryReference() ]
+	strings.append( fmt % ( 'CMF @ ' + h.GetFactoryReferenceString(), h.GetImpedanceCMF() ) )
+	print( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) )
+	sys.stdout.flush()
+
+def Test( port, arg='' ):
+	"""
+	`arg` is either a specification of the desired reference, or the
+	string "impedances"
+	"""
+	h = Headset() # if we did not want to change the callbacks first, we could simply say h = Headset( port )
+	h.SetMessageCallback( ExampleMessageCallback )  # could set this to NullMessageCallback instead if we wanted to shut it up
+	h.Connect( port )
+	if arg.lower().startswith( 'imp' ):
+		h.SetSampleCallback( ExampleSampleCallback_Impedances, 0 )
+		h.StartImpedanceDriver()
+	else:
+		h.SetSampleCallback( ExampleSampleCallback_Signals, 0 )
+		if len( arg.strip() ): h.SetDefaultReference( arg, True )
+	h.Receive( 2.0, 2.0 )  # calls StartDataAcquisition(), then Idle() for 2 seconds, then StopDataAcquisition(), then Idle() for 2 seconds
+	# NB: your application will probably want to use Idle( seconds ) in its main loop instead of Receive()
+	print( h.GetInfoString() )
+
+if __name__ == '__main__':
+	args = getattr( sys, 'argv', [ '' ] )
+	if sys.platform.lower().startswith( 'win' ): default_port = 'COM6'
+	else:                                        default_port = '/dev/cu.DSI7-0009.BluetoothSeri'
+	
+	# first command-line argument: serial port address
+	if len( args ) > 1: port = args[ 1 ]
+	else: port = default_port
+	
+	# second command-line argument:  name of the Source to be used as reference, or the word 'impedances'
+	if len( args ) > 2: ref = args[ 2 ]
+	else: ref = ''
+	
+	Test( port, ref )
