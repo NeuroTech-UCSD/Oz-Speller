@@ -291,7 +291,7 @@ def Test( port, arg='' ):
 
 if __name__ == '__main__':
 	args = getattr( sys, 'argv', [ '' ] )
-	if sys.platform.lower().startswith( 'win' ): default_port = 'COM6'
+	if sys.platform.lower().startswith( 'win' ): default_port = 'COM4'
 	else:                                        default_port = '/dev/cu.DSI7-0009.BluetoothSeri'
 	
 	# first command-line argument: serial port address
