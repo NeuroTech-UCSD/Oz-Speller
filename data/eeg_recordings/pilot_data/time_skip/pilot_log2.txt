@@ -1,0 +1,77 @@
+PS C:\Users\simon\Documents\TNT\VEP-App> ======== Running on http://0.0.0.0:4002 ========
+(Press CTRL+C to quit)
+frontend is ready
+sending
+{'SESSION_NUMBER': 2, 'BREAK_DURATION': 20, 'CHANNELS': ['P4'], 'INTER_TRIAL_INTERVAL': 1000, 'NUM_BLOCKS': 10, 'SAMPLING_FREQUENCY': 100, 'STARTUP_DELAY': 0, 'TARGET_FREQUENCIES': {'a': 15, 'b': 14}, 'TRIAL_DURATION': 4000, 'SUBJECT_NAME': 'Simon', 'INTER_TRIAL_DURATION': 1000}
+connected
+calibration is ready
+connected
+dsi is ready
+dsi collection initiated -- Start recording data ...
+Event code = 9  Node = 1
+Montage = LE,F4,C4,P4,P3,C3,F3,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,TRG
+Event code = 12  Node = 1
+Event code = 10  Node = 1
+Mains,Sample = 60,300
+Event code = 2  Node = 1
+current trial * -- 38:8.324
+All components are ready
+calibration manager initiated -- Start sending trials ...
+calibration manager: send trial W to server, time diff since last trial: 0.000, 38:8.860
+5.412732
+trial changed to "W" -- 38:8.860
+current trial W -- 38:10.168
+current trial * -- 38:12.283
+calibration manager: send trial A to server, time diff since last trial: 5.021, 38:13.882
+5.023489
+trial changed to "A" -- 38:13.884
+current trial A -- 38:14.404
+current trial * -- 38:16.539
+current trial * -- 38:18.656
+calibration manager: send trial H to server, time diff since last trial: 5.011, 38:18.893
+5.015156
+trial changed to "H" -- 38:18.899
+current trial H -- 38:20.781
+current trial * -- 38:22.898
+calibration manager: send trial B to server, time diff since last trial: 5.002, 38:23.895
+5.002925
+trial changed to "B" -- 38:23.902
+current trial B -- 38:25.349
+current trial * -- 38:27.178
+calibration manager: send trial K to server, time diff since last trial: 5.021, 38:28.916
+5.016807
+trial changed to "K" -- 38:28.919
+current trial K -- 38:29.316
+current trial * -- 38:31.444
+current trial * -- 38:33.545
+calibration manager: send trial J to server, time diff since last trial: 5.035, 38:33.951
+5.040018
+trial changed to "J" -- 38:33.959
+current trial J -- 38:35.676
+current trial * -- 38:37.791
+calibration manager: send trial T to server, time diff since last trial: 5.018, 38:38.968
+5.020697
+trial changed to "T" -- 38:38.979
+current trial T -- 38:39.913
+current trial * -- 38:42.153
+calibration manager: send trial C to server, time diff since last trial: 4.997, 38:43.966
+4.994304
+trial changed to "C" -- 38:43.974
+current trial C -- 38:44.157
+current trial * -- 38:46.289
+current trial * -- 38:48.429
+calibration manager: send trial O to server, time diff since last trial: 5.025, 38:48.991
+5.024188
+trial changed to "O" -- 38:48.998
+current trial O -- 38:50.555
+current trial * -- 38:52.687
+calibration manager: send trial X to server, time diff since last trial: 4.995, 38:53.986
+4.990749
+trial changed to "X" -- 38:53.989
+current trial X -- 38:54.808
+current trial * -- 38:56.935
+current trial * -- 38:59.463
+current trial * -- 39:1.172
+current trial * -- 39:3.296
+current trial * -- 39:5.406
+current trial * -- 39:7.514

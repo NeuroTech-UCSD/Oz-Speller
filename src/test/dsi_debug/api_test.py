@@ -5,7 +5,7 @@ import dsi
 
 SampleCallback = ctypes.CFUNCTYPE( None, ctypes.c_void_p, ctypes.c_double, ctypes.c_void_p )
 var1 = []
-var2 = ''
+sample_str = ''
 sys_stdout = sys.stdout
 io_stdout = io.StringIO()
 run_count = 0
@@ -18,17 +18,17 @@ def IfStringThenNormalString( x ):
 @SampleCallback
 def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
     global run_count
-    global var2
+    global sample_str
     h = dsi.Headset( headsetPtr )
     strings = [ '%s=%+08.2f' % ( IfStringThenNormalString( ch.GetName() ), ch.ReadBuffered() ) for ch in h.Channels() ]
-    var2 += ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) + '\n'
+    sample_str += ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) + '\n'
     run_count += 1
     if run_count >= 300:
         run_count = 0
-        print(var2)
+        print(sample_str)
         with open("myfile.txt", 'a') as file1:
-            file1.write(var2)
-        var2 = ''
+            file1.write(sample_str)
+        sample_str = ''
     # print( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) )
     # sys.stdout.flush()
     # var1.append( ( '%8.3f:   ' % packetTime ) + ', '.join( strings ) )

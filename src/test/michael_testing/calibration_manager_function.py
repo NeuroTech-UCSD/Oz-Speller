@@ -36,9 +36,14 @@ async def ready():
 async def send_trial():
     print('calibration manager initiated -- Start sending trials ...')
     # ============= use config instead of hard coding ================
-    num_blocks = config["NUM_BLOCKS"]
-    trial_duration = config["TRIAL_DURATION"] / 1000  # convert to seconds
-    inter_trial_interval = config["INTER_TRIAL_INTERVAL"] / 1000  # convert to seconds
+    if config != None: # due to some unknown bugs sometimes config is None type
+        num_blocks = config["NUM_BLOCKS"]
+        trial_duration = config["TRIAL_DURATION"] / 1000  # convert to seconds
+        inter_trial_interval = config["INTER_TRIAL_INTERVAL"] / 1000  # convert to seconds
+    else:
+        num_blocks = 26 #config["NUM_BLOCKS"]
+        trial_duration = 4 #config["TRIAL_DURATION"] / 1000  # convert to seconds
+        inter_trial_interval = 1 #config["INTER_TRIAL_INTERVAL"] / 1000  # convert to seconds
     # ================================================================
 
     tic = time.time()
