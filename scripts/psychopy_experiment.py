@@ -8,7 +8,7 @@ Notes:
 from psychopy import visual
 import numpy as np
 import random
-import sys
+import sys, time
 sys.path.append('src') # if run from the root project directory
 
 # █████████████████████████████████████████████████████████████████████████████
@@ -16,8 +16,13 @@ sys.path.append('src') # if run from the root project directory
 ## VARIABLES
 
 refresh_rate = 60. # refresh rate of the monitor
-use_retina = True # whether the monitor is a retina display
-stim_duration = 1. # in seconds
+use_retina = False # whether the monitor is a retina display
+stim_duration = 5. # in seconds
+n_per_class=20
+classes=[10,12,15]
+data = []
+run_count = 0
+first_call = True
 
 # █████████████████████████████████████████████████████████████████████████████
 
@@ -87,11 +92,16 @@ SampleCallback = ctypes.CFUNCTYPE( None, ctypes.c_void_p, ctypes.c_double, ctype
 def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
     global run_count
     global data
+    global first_call
     h = dsi.Headset( headsetPtr )
     sample_data = [packetTime] # time stamp
     sample_data.extend([ch.ReadBuffered() for ch in h.Channels()]) # channel voltages
     data.append(sample_data)
     run_count += 1
+    if first_call:
+        with open("meta.csv", 'w') as csv_file:
+            csv_file.write(str(time.time()) + '\n')
+        first_call = False
     if run_count >= 300: # save data every second
         run_count = 0
         data_np = np.array(data)
@@ -119,6 +129,7 @@ def record():
 if __name__ == "__main__": 
     recording = multiprocessing.Process(target=record,daemon=True)
     recording.start()
+    time.sleep(6)
 
 # █████████████████████████████████████████████████████████████████████████████
 
@@ -138,10 +149,13 @@ if __name__ == "__main__":
     fixation = create_fixation_cross()
     square = create_flickering_square()
     photosensor = create_photosensor_dot()
-    sequence = create_trial_sequence(n_per_class=1,classes=[10,12,15])
+    sequence = create_trial_sequence(n_per_class=n_per_class,classes=classes)
     for flickering_freq in sequence:
         # 750ms fixation cross
         for frame in range(ms_to_frame(750, refresh_rate)):
+            if frame == 0:
+                with open("meta.csv", 'a') as csv_file:
+                    csv_file.write(str(flickering_freq) + ', ' + str(time.time()) + '\n')
             fixation.draw()
             win.flip()
         # 'stim_duration' seconds stimulation
@@ -158,5 +172,6 @@ if __name__ == "__main__":
                 win.flip()
             else:
                 win.flip()
+    time.sleep(3)
 
 
