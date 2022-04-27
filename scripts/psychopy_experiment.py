@@ -7,6 +7,7 @@ Notes:
 
 from psychopy import visual
 import numpy as np
+from scipy import signal
 import random
 import sys, time
 sys.path.append('src') # if run from the root project directory
@@ -19,7 +20,7 @@ refresh_rate = 60. # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
 stim_duration = 5. # in seconds
 n_per_class=20
-classes=[10,12,15]
+classes=[9,11,12,13,14,16,17,18]
 data = []
 run_count = 0
 first_call = True
@@ -150,22 +151,31 @@ if __name__ == "__main__":
     square = create_flickering_square()
     photosensor = create_photosensor_dot()
     sequence = create_trial_sequence(n_per_class=n_per_class,classes=classes)
-    for flickering_freq in sequence:
-        # 750ms fixation cross
+    for flickering_freq in sequence: # for each trial in the trail sequence
+        # 750ms fixation cross:
         for frame in range(ms_to_frame(750, refresh_rate)):
             if frame == 0:
                 with open("meta.csv", 'a') as csv_file:
                     csv_file.write(str(flickering_freq) + ', ' + str(time.time()) + '\n')
             fixation.draw()
             win.flip()
-        # 'stim_duration' seconds stimulation
-        frames_per_cycle = ms_to_frame(1/flickering_freq*1000, refresh_rate) 
-        stim_duration_frames = ms_to_frame(stim_duration*1000, refresh_rate)
-        frames_on = int(frames_per_cycle/2)
-        frames_off = int(frames_per_cycle - frames_on)
-        single_cycle = [1] * frames_on + [0] * frames_off
-        trial = (single_cycle * int(flickering_freq*stim_duration + 2))[:stim_duration_frames]
-        for frame in trial:
+        # # 'stim_duration' seconds stimulation using constant period:
+        # frames_per_cycle = ms_to_frame(1/flickering_freq*1000, refresh_rate) 
+        # stim_duration_frames = ms_to_frame(stim_duration*1000, refresh_rate)
+        # frames_on = int(frames_per_cycle/2)
+        # frames_off = int(frames_per_cycle - frames_on)
+        # single_cycle = [1] * frames_on + [0] * frames_off
+        # trial = (single_cycle * int(flickering_freq*stim_duration + 2))[:stim_duration_frames]
+
+        # 'stim_duration' seconds stimulation using flashing frequency approximation:
+        phase_offset = 0 # for implementing frequency and phase mixed coding in the future
+        phase_offset += 0.00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
+        stim_duration_frames = ms_to_frame(stim_duration*1000, refresh_rate) # total number of frames for the stimulation
+        frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
+        trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / 60) + phase_offset) # frequency approximation formula
+        trial[trial<0] = 0 # turn -1 into 0
+        trial = trial.astype(int) # change float to int
+        for frame in trial: # present the stimulation frame by frame
             if frame == 1:
                 square.draw()
                 photosensor.draw()
