@@ -19,8 +19,8 @@ sys.path.append('src') # if run from the root project directory
 refresh_rate = 60. # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
 stim_duration = 5. # in seconds
-n_per_class=20
-classes=[9,11,12,13,14,16,17,18]
+n_per_class=10
+classes=[9,11]
 data = []
 run_count = 0
 first_call = True
@@ -101,7 +101,7 @@ def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
     run_count += 1
     if first_call:
         with open("meta.csv", 'w') as csv_file:
-            csv_file.write(str(time.time()) + '\n')
+            csv_file.write(str(time.perf_counter()) + '\n')
         first_call = False
     if run_count >= 300: # save data every second
         run_count = 0
@@ -156,16 +156,9 @@ if __name__ == "__main__":
         for frame in range(ms_to_frame(750, refresh_rate)):
             if frame == 0:
                 with open("meta.csv", 'a') as csv_file:
-                    csv_file.write(str(flickering_freq) + ', ' + str(time.time()) + '\n')
+                    csv_file.write(str(flickering_freq) + ', ' + str(time.perf_counter()) + '\n')
             fixation.draw()
             win.flip()
-        # # 'stim_duration' seconds stimulation using constant period:
-        # frames_per_cycle = ms_to_frame(1/flickering_freq*1000, refresh_rate) 
-        # stim_duration_frames = ms_to_frame(stim_duration*1000, refresh_rate)
-        # frames_on = int(frames_per_cycle/2)
-        # frames_off = int(frames_per_cycle - frames_on)
-        # single_cycle = [1] * frames_on + [0] * frames_off
-        # trial = (single_cycle * int(flickering_freq*stim_duration + 2))[:stim_duration_frames]
 
         # 'stim_duration' seconds stimulation using flashing frequency approximation:
         phase_offset = 0 # for implementing frequency and phase mixed coding in the future
