@@ -19,9 +19,10 @@ sys.path.append('src') # if run from the root project directory
 
 refresh_rate = 60. # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
-stim_duration = 2. # in seconds
-n_per_class=10
-classes=[(10,0),(10,1),(15,0),(15,1)] # (frequency(hz),phase-offset(pi))
+stim_duration = 5. # in seconds
+isi_duration = 0.75 # in seconds
+n_per_class=20
+classes=[(10,0),(10,0.5),(10,1),(10,1.5)] # (frequency(hz),phase-offset(pi))
 data = []
 run_count = 0
 first_call = True
@@ -102,7 +103,7 @@ def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
     run_count += 1
     if first_call:
         with open("meta.csv", 'w') as csv_file:
-            csv_file.write(str(time.perf_counter()) + '\n')
+            csv_file.write(str(time.time()) + '\n')
         first_call = False
     if run_count >= 300: # save data every second
         run_count = 0
@@ -154,10 +155,10 @@ if __name__ == "__main__":
     sequence = create_trial_sequence(n_per_class=n_per_class,classes=classes)
     for flickering_freq, phase_offset in sequence: # for each trial in the trail sequence
         # 750ms fixation cross:
-        for frame in range(ms_to_frame(750, refresh_rate)):
+        for frame in range(ms_to_frame(isi_duration*1000, refresh_rate)):
             if frame == 0:
                 with open("meta.csv", 'a') as csv_file:
-                    csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(time.perf_counter()) + '\n')
+                    csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(time.time()) + '\n')
             fixation.draw()
             win.flip()
 
@@ -175,6 +176,6 @@ if __name__ == "__main__":
                 win.flip()
             else:
                 win.flip()
-    time.sleep(3)
+    time.sleep(6)
 
 

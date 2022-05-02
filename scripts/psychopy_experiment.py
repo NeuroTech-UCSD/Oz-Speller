@@ -102,7 +102,7 @@ def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
     run_count += 1
     if first_call:
         with open("meta.csv", 'w') as csv_file:
-            csv_file.write(str(time.perf_counter()) + '\n')
+            csv_file.write(str(time.time()) + '\n')
         first_call = False
     if run_count >= 300: # save data every second
         run_count = 0
@@ -157,7 +157,7 @@ if __name__ == "__main__":
         for frame in range(ms_to_frame(isi_duration, refresh_rate)):
             if frame == 0:
                 with open("meta.csv", 'a') as csv_file:
-                    csv_file.write(str(flickering_freq) + ', ' + str(time.perf_counter()) + '\n')
+                    csv_file.write(str(flickering_freq) + ', ' + str(time.time()) + '\n')
             fixation.draw()
             win.flip()
 
