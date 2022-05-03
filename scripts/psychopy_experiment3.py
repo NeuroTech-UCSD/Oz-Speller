@@ -21,8 +21,14 @@ refresh_rate = 60. # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
 stim_duration = 5. # in seconds
 isi_duration = 0.75 # in seconds
-n_per_class=20
-classes=[(10,0),(10,0.5),(10,1),(10,1.5)] # (frequency(hz),phase-offset(pi))
+after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
+n_per_class=6
+# classes=[(15,0),(15,0.5),(15,1),(15,1.5)] # (frequency(hz),phase-offset(pi))
+classes=[(8,0),(9,1.75),(10,1.5),(11,1.25),(12,1),(13,0.75),(14,0.5),(15,0.25),
+        (8.2,0.35),(9.2,0.1),(10.2,1.85),(11.2,1.6),(12.2,1.35),(13.2,1.1),(14.2,0.85),(15.2,0.6),
+        (8.4,0.7),(9.4,0.45),(10.4,0.2),(11.4,1.95),(12.4,1.7),(13.4,1.45),(14.4,1.2),(15.4,0.95),
+        (8.6,1.05),(9.6,0.8),(10.6,0.55),(11.6,0.3),(12.6,0.05),(13.6,1.8),(14.6,1.55),(15.6,1.3),
+        (8.8,1.4),(9.8,1.15),(10.8,0.9),(11.8,0.65),(12.8,0.4),(13.8,0.15),(14.8,1.9),(15.8,1.65)]
 data = []
 run_count = 0
 first_call = True
@@ -164,7 +170,7 @@ if __name__ == "__main__":
 
         # 'stim_duration' seconds stimulation using flashing frequency approximation:
         phase_offset += 0.00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
-        stim_duration_frames = ms_to_frame(stim_duration*1000, refresh_rate) # total number of frames for the stimulation
+        stim_duration_frames = ms_to_frame((stim_duration+after_stim_padding)*1000, refresh_rate) # total number of frames for the stimulation
         frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
         trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / 60) + phase_offset * np.pi) # frequency approximation formula
         trial[trial<0] = 0 # turn -1 into 0
