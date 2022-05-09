@@ -1,0 +1,12 @@
+# required
+sampling_frequency: 300
+isi_duration: 0.75
+stimulus_duration: 5.000
+channels: ['Pz', 'F4', 'C4', 'P4', 'P3', 'C3', 'F3']
+delta_phase: 0.35  # unit: pi
+delta_freq: 0.2
+
+# optional
+num_targets: 40
+num_trial_per_target: 20
+

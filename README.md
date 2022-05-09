@@ -32,5 +32,31 @@ Describe the mapping of electrodes with a mapping figure and a real-life photo o
 ## Modules
 Descriptions of different parts of the projects worth noting, each with its own subtitle.
 
+## Download Data
+- Currently, data is hosted in the NeuroTech Google Drive
+
+## Prepare Data
+- `py src/data/make_dataset.py ${RAW_DATA_DIR} ${OUTPUT_PATH}` to parse raw continuous data into bandpass trialized data for modeling. The output data will be numpy data with the shape: (trials, num_targets, channels, timepoints) 
+  - ${RAW_DATA_DIR} should have two files in it, meta.csv and eeg.csv.
+  - eeg.csv will have the first column being the timestamps, and the rest of the columns
+being the channel names. 
+  - meta.csv has no headers, its 1st column is the corresponding freq of our targets, 2nd column is the phase offset, and 
+3rd column is the time with timepoint as units
+- `py src/data/split_dataset.py ${EEG_DATA_PATH} ${LABEL_DATA_PATH} -train -val -test ${OUTPUT_PATH}` 
+  - ${EEG_DATA_PATH} should contain data with the shape in npy format: (trials, num_targets, channels, timepoints)
+  - ${EEG_DATA_PATH} should contain data with the shape in npy format: (trials, num_targets)
+  - `-train` specifies the proportion of training data `-val` and `-test` for the validation and testing data respectively. The proportions must sum up to 1.
+
+
+## Models
+- `py src/models/train.py ${TRAIN_DATA_PATH} ${VALIDATION_DATA_PATH} ${OUTPUT_PATH}` to train the model and save it
+
+## Evaluation
+`py src/models/evaluation.py ${CHECKPOINT_PATH} ${TEST_DATA_PATH}` to evaluate model performance
+
 ## Acknowledgement
 Put the team and partners here.
+
+- EEGNet: https://github.com/vlawhern/arl-eegmodels
+- Visual Delay: https://www.pnas.org/doi/10.1073/pnas.1508080112
+- Frame index flashing: https://sccn.ucsd.edu/~yijun/pdfs/EMBC14c.pdf

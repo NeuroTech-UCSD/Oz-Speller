@@ -7,3 +7,7 @@ python-engineio
 python_socketio
 six==1.14.0
 yarl==1.4.2
+click
+pyyaml
+tensorflow
+sklearn
