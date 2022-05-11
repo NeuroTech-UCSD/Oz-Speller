@@ -166,7 +166,7 @@ if __name__ == "__main__":
         phase_offset += 0.00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
         stim_duration_frames = ms_to_frame(stim_duration*1000, refresh_rate) # total number of frames for the stimulation
         frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
-        trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / 60) + phase_offset) # frequency approximation formula
+        trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset) # frequency approximation formula
         trial[trial<0] = 0 # turn -1 into 0
         trial = trial.astype(int) # change float to int
         for frame in trial: # present the stimulation frame by frame

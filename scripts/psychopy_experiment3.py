@@ -17,18 +17,36 @@ sys.path.append('src') # if run from the root project directory
 
 ## VARIABLES
 
-refresh_rate = 60. # refresh rate of the monitor
+refresh_rate = 60.02 # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
 stim_duration = 5. # in seconds
 isi_duration = 0.75 # in seconds
 after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
-n_per_class=6
-# classes=[(15,0),(15,0.5),(15,1),(15,1.5)] # (frequency(hz),phase-offset(pi))
-classes=[(8,0),(9,1.75),(10,1.5),(11,1.25),(12,1),(13,0.75),(14,0.5),(15,0.25),
-        (8.2,0.35),(9.2,0.1),(10.2,1.85),(11.2,1.6),(12.2,1.35),(13.2,1.1),(14.2,0.85),(15.2,0.6),
-        (8.4,0.7),(9.4,0.45),(10.4,0.2),(11.4,1.95),(12.4,1.7),(13.4,1.45),(14.4,1.2),(15.4,0.95),
-        (8.6,1.05),(9.6,0.8),(10.6,0.55),(11.6,0.3),(12.6,0.05),(13.6,1.8),(14.6,1.55),(15.6,1.3),
-        (8.8,1.4),(9.8,1.15),(10.8,0.9),(11.8,0.65),(12.8,0.4),(13.8,0.15),(14.8,1.9),(15.8,1.65)]
+n_per_class=10
+# classes=[(8,0),(10,0.5),(12,1),(14,1.5)] # (frequency(hz),phase-offset(pi))
+# classes=[(8,0),(9,0.25),(10,0.5),(11,0.75),(12,1),(13,1.25),(14,1.5),(15,1.75)] # (frequency(hz),phase-offset(pi))
+# classes=[(8,0.75),(8.01,0.75),(8.02,00.75),(8.03,0.75),(8.04,0.75),(8.05,0.75),(8.06,0.75),(8.07,0.75)] # (frequency(hz),phase-offset(pi))
+# classes=[(10,0.75),(11,0.75),(12,0.75),(13,0.75),(15,0.75)]
+# classes=[(10,1.75),(15,0.75)]
+# classes=[(8,0),(9,1.75),(10,1.5),(11,1.25),(12,1),(13,0.75),(14,0.5),(15,0.25),
+#         (8.2,0.35),(9.2,0.1),(10.2,1.85),(11.2,1.6),(12.2,1.35),(13.2,1.1),(14.2,0.85),(15.2,0.6),
+#         (8.4,0.7),(9.4,0.45),(10.4,0.2),(11.4,1.95),(12.4,1.7),(13.4,1.45),(14.4,1.2),(15.4,0.95),
+#         (8.6,1.05),(9.6,0.8),(10.6,0.55),(11.6,0.3),(12.6,0.05),(13.6,1.8),(14.6,1.55),(15.6,1.3),
+#         (8.8,1.4),(9.8,1.15),(10.8,0.9),(11.8,0.65),(12.8,0.4),(13.8,0.15),(14.8,1.9),(15.8,1.65)]
+# classes=[(8,0.0),(9,0.0),(10,0.0),(11,0.0),(12,0.0),(13,0.0),(14,0.0),(15,0.0),
+#          (8,0.5),(9,0.5),(10,0.5),(11,0.5),(12,0.5),(13,0.5),(14,0.5),(15,0.5),
+#          (8,1.0),(9,1.0),(10,1.0),(11,1.0),(12,1.0),(13,1.0),(14,1.0),(15,1.0),
+#          (8,1.5),(9,1.5),(10,1.5),(11,1.5),(12,1.5),(13,1.5),(14,1.5),(15,1.5)]
+classes=[(11.0,0.0),(11.0,0.5),(11.0,1.0),(11.0,1.5)]
+# classes=[(12.6,0.25),(12.6,0.75),(12.6,1.25),(12.6,1.75)]
+        # [( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+        #  ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+        #  (10,0),(10,0.5),(10,1),(10,1.5),
+        #  (11,0),(11,0.5),(11,1),(11,1.5),
+        #  (12,0),(12,0.5),(12,1),(12,1.5),
+        #  (13,0),(13,0.5),(13,1),(13,1.5),
+        #  (14,0),(14,0.5),(14,1),(14,1.5),
+        #  (15,0),(15,0.5),(15,1),(15,1.5),]
 data = []
 run_count = 0
 first_call = True
@@ -108,6 +126,8 @@ def ExampleSampleCallback_Signals( headsetPtr, packetTime, userData ):
     data.append(sample_data)
     run_count += 1
     if first_call:
+        if sample_data[1] > 1e15: # if Pz saturation error happens
+            quit()
         with open("meta.csv", 'w') as csv_file:
             csv_file.write(str(time.time()) + '\n')
         first_call = False
@@ -138,7 +158,7 @@ def record():
 if __name__ == "__main__": 
     recording = multiprocessing.Process(target=record,daemon=True)
     recording.start()
-    time.sleep(6)
+    time.sleep(15)
 
 # █████████████████████████████████████████████████████████████████████████████
 
@@ -172,7 +192,7 @@ if __name__ == "__main__":
         phase_offset += 0.00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
         stim_duration_frames = ms_to_frame((stim_duration+after_stim_padding)*1000, refresh_rate) # total number of frames for the stimulation
         frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
-        trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / 60) + phase_offset * np.pi) # frequency approximation formula
+        trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
         trial[trial<0] = 0 # turn -1 into 0
         trial = trial.astype(int) # change float to int
         for frame in trial: # present the stimulation frame by frame
