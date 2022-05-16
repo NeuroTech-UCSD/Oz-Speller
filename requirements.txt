@@ -1,4 +1,4 @@
-numpy
+numpy==1.21
 aiohttp==3.8.1
 async-timeout==4.0.2
 chardet==3.0.4
@@ -11,3 +11,4 @@ click
 pyyaml
 tensorflow
 sklearn
+fdasrsf
