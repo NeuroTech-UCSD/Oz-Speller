@@ -18,7 +18,7 @@ sys.path.append('src') # if run from the root project directory
 
 ## VARIABLES
 center_flash = True # whether the visual stimuli are only presented at the center of the screen
-use_square = False
+flash_mode = 'sine' # 'sine', 'square', or 'chirp', 'dual band'
 refresh_rate = 60.02 # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
 stim_duration = 5. # in seconds
@@ -39,7 +39,8 @@ n_per_class=10
 #          (8,0.5),(9,0.5),(10,0.5),(11,0.5),(12,0.5),(13,0.5),(14,0.5),(15,0.5),
 #          (8,1.0),(9,1.0),(10,1.0),(11,1.0),(12,1.0),(13,1.0),(14,1.0),(15,1.0),
 #          (8,1.5),(9,1.5),(10,1.5),(11,1.5),(12,1.5),(13,1.5),(14,1.5),(15,1.5)]
-classes=[(13.0,0.0),(13.0,0.5),(13.0,1.0),(13.0,1.5)]
+classes=[(12.0,0.0),(12.0,0.5),(12.0,1.0),(12.0,1.5)]
+# classes=[(8,9),(8,10),(8,11),(8,12)]
 # classes=[(12.6,0.25),(12.6,0.75),(12.6,1.25),(12.6,1.75)]
         # [( 8,0),( 8,0.5),( 8,1),( 8,1.5),
         #  ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
@@ -200,19 +201,45 @@ if __name__ == "__main__":
             phase_offset += 0.00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
             stim_duration_frames = ms_to_frame((stim_duration+after_stim_padding)*1000, refresh_rate) # total number of frames for the stimulation
             frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
-            if use_square: # if we want to use binarized square wave visual stimuli
+            if flash_mode == 'square': # if we want to use binarized square wave visual stimuli
+                # trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
+                # trial[trial<0] = 0 # turn -1 into 0
+                # trial = trial.astype(int) # change float to int
+                # for frame in trial: # present the stimulation frame by frame
+                #     if frame == 1:
+                #         square.draw()
+                #         photosensor.draw()
+                #         win.flip()
+                #     else:
+                #         win.flip()
                 trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
-                trial[trial<0] = 0 # turn -1 into 0
-                trial = trial.astype(int) # change float to int
+                # trial += signal.square(2 * np.pi * 9 * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
+                # trial /= 2
                 for frame in trial: # present the stimulation frame by frame
-                    if frame == 1:
-                        square.draw()
-                        photosensor.draw()
-                        win.flip()
-                    else:
-                        win.flip()
-            else: # if we want to use smoothed sine wave visual stimuli
+                    square.color = (frame, frame, frame)
+                    square.draw()
+                    win.flip()
+            elif flash_mode == 'sine': # if we want to use smoothed sine wave visual stimuli
                 trial = np.sin(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
+                # trial += np.sin(2 * np.pi * 9 * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
+                # trial /= 2
+                for frame in trial: # present the stimulation frame by frame
+                    square.color = (frame, frame, frame)
+                    square.draw()
+                    win.flip()
+            elif flash_mode == 'chirp':
+                frame_times = np.linspace(0,stim_duration,int(stim_duration*refresh_rate))
+                trial = signal.chirp(frame_times, f0=10, f1=14, t1=5, method='linear')
+                for frame in trial: # present the stimulation frame by frame
+                    square.color = (frame, frame, frame)
+                    square.draw()
+                    win.flip()
+            elif flash_mode == 'dual band':
+                flickering_freq2 = phase_offset
+                phase_offset = 0.00001
+                trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
+                trial += signal.square(2 * np.pi * flickering_freq2 * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
+                trial /= 2
                 for frame in trial: # present the stimulation frame by frame
                     square.color = (frame, frame, frame)
                     square.draw()
