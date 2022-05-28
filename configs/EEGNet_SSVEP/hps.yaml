@@ -1,0 +1,24 @@
+D:
+  type: fixed
+  value: 1
+F1:
+  type: fixed
+  value: 96
+batchSize:
+  type: fixed
+  value: 100
+dropoutRate:
+  type: fixed
+  value: 0.9500000000000001
+epochs:
+  type: fixed
+  value: 600
+kernLength:
+  type: fixed
+  value: 230
+learningRate:
+  type: fixed
+  value: 0.0008313832174294607
+patience:
+  type: fixed
+  value: 400

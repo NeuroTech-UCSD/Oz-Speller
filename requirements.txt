@@ -9,6 +9,14 @@ six==1.14.0
 yarl==1.4.2
 click
 pyyaml
-tensorflow
+tensorboard==2.2.2
+tensorboard-plugin-wit==1.8.0
+tensorflow==2.2.2  
+tensorflow-estimator==2.2.0
+tensorflow-gpu==2.2.2 
+
+matplotlib
 sklearn
 fdasrsf
+seaborn 
+mne
