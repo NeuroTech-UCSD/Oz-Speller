@@ -35,8 +35,10 @@ logger = logging.getLogger(__file__)
 
 @click.command()
 @click.argument('data_path')
+@click.argument('optimal_hps_path')
 @click.argument('output_path')
-def main(data_path, output_path):
+@click.option('-pca', '--use_pca', is_flag=True, default=False, show_default=True, help='Apply pca transform to reject fluff')
+def main(data_path, optimal_hps_path, output_path, use_pca):
     """
     Args:
         data_path: data_path relative to the root directory
@@ -52,8 +54,7 @@ def main(data_path, output_path):
     y = y.reshape([-1])
     logger.info((X.shape, y.shape))
     
-    # Load hyperparameter search space
-    optimal_hps_path = os.path.join(project_path, 'configs', 'EEGNet_SSVEP', 'hps.yaml')
+    # Load hyperparameter
     with open(optimal_hps_path, 'r') as f:
         hps_dict = yaml.safe_load(f)
     HPS = build_hps(hps_dict)
@@ -61,7 +62,7 @@ def main(data_path, output_path):
     # Start validation
     tf.keras.backend.clear_session()
     base_model = EEGNet_SSVEP(nb_classes=num_targets, Chans=num_channels, Samples=timepoints_stimulus_duration)
-    base_model.fit(HPS, object, X, y, verbose=1, cache_learning=True)
+    base_model.fit(HPS, object, X, y, verbose=1, cache_learning=True, use_pca=use_pca)
     
     with open(output_path, 'wb') as handle:
         pickle.dump(base_model.history, handle, protocol=pickle.HIGHEST_PROTOCOL)

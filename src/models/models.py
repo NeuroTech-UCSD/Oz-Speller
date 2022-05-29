@@ -10,6 +10,7 @@ tf.autograph.set_verbosity(
 )
 import keras_tuner as kt
 from sklearn.model_selection import StratifiedKFold
+from sklearn.decomposition import PCA
 import time
 
 
@@ -35,7 +36,7 @@ class EEGNet_SSVEP(kt.HyperModel):
 #         gpus = tf.config.list_logical_devices('GPU')
 #         self.strategy = tf.distribute.MirroredStrategy(gpus)
 
-    def build(self, hps):
+    def build(self, hps, use_pca=False):
         """ SSVEP Variant of EEGNet, as used in [1]. 
         Inputs:
 
@@ -57,7 +58,10 @@ class EEGNet_SSVEP(kt.HyperModel):
         """
 
         nb_classes = self.nb_classes
-        Chans = self.Chans
+        if use_pca:
+            Chans = self.n_pc
+        else:
+            Chans = self.Chans
         Samples = self.Samples
         dropoutRate = hps.get('dropoutRate')
         kernLength = hps.get('kernLength')
@@ -104,12 +108,46 @@ class EEGNet_SSVEP(kt.HyperModel):
 
         return tf.keras.Model(inputs=input1, outputs=softmax)
             
-            
-    def fit(self, hps, model, X, y, callbacks=[], verbose=0, cache_learning=False, **kwargs):
+    def _pca_transform(self, X_train, X_test):
+        """
+        Args:
+            X_train.shape == (train_trials * num_targets, num_channels, timepoints_stimulus_duration)
+        Return 
+            (train_trials * num_targets, num_channels, timepoints_stimulus_duration)
+        """
+         # flatten eeg to fit PCA
+        eeg_all_flatten_train = X_train.transpose(0, 2, 1)
+        eeg_all_flatten_train = eeg_all_flatten_train.reshape((-1, self.Chans))
+        eeg_all_flatten_test = X_test.transpose(0, 2, 1)
+        eeg_all_flatten_test = eeg_all_flatten_test.reshape((-1, self.Chans))
+
+        assert eeg_all_flatten_train.shape == (len(X_train) * self.Samples, self.Chans)
+        pca = PCA(n_components='mle')
+        eeg_all_pca_train = pca.fit_transform(eeg_all_flatten_train)
+        eeg_all_pca_test = pca.transform(eeg_all_flatten_test)
+        n_pc = eeg_all_pca_train.shape[-1]
+
+        # reshape eeg_all_pca to ((num_trial_per_target, num_targets, num_pc, timepoints_stimulus_duration)
+        eeg_all_pca_train = eeg_all_pca_train.reshape((-1, self.Samples, n_pc))
+        eeg_all_pca_train = eeg_all_pca_train.transpose(0, 2, 1)
+        eeg_all_pca_test = eeg_all_pca_test.reshape((-1, self.Samples, n_pc))
+        eeg_all_pca_test = eeg_all_pca_test.transpose(0, 2, 1)
+        
+        # reject first PC to remove fluff
+        eeg_all_pca_train =  eeg_all_pca_train[:, 1:]
+        eeg_all_pca_test =  eeg_all_pca_test[:, 1:]
+        self.n_pc = n_pc - 1  # for building the model
+        
+        assert eeg_all_pca_train.shape == (len(X_train), n_pc - 1, self.Samples)
+        assert eeg_all_pca_test.shape == (len(X_test), n_pc - 1, self.Samples)
+        
+        return eeg_all_pca_train, eeg_all_pca_test
+        
+    def fit(self, hps, model, X, y, callbacks=[], verbose=0, cache_learning=False, use_pca=False, **kwargs):
         '''
         model is ignored as we have to construct new model for each fold
         Args:
-          
+            X.shape == (trials * num_targets, num_channels, timepoints_stimulus_duration, 1)
         '''
         assert type(callbacks) == list
         
@@ -123,9 +161,13 @@ class EEGNet_SSVEP(kt.HyperModel):
         kf = StratifiedKFold(n_splits=num_folds)
         val_loss_folds = np.empty([num_folds])
         val_acc_folds = np.empty([num_folds])
+
         for i, (train_index, test_index) in enumerate(kf.split(X, y)):
             print(f'{i + 1} / {num_folds} fold')
             X_train, X_test = X[train_index], X[test_index]
+            if use_pca:
+                X_train, X_test = self._pca_transform(np.squeeze(X_train), np.squeeze(X_test))
+                
             y_train, y_test = y[train_index], y[test_index]
             
             # clear global states to release some GPU memory for keeping states
@@ -142,7 +184,7 @@ class EEGNet_SSVEP(kt.HyperModel):
 
 #             with self.strategy.scope():
             
-            model = self.build(hps)
+            model = self.build(hps, use_pca)
             model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), loss='sparse_categorical_crossentropy', metrics=['acc'])
             
             train_ds = tf.data.Dataset.from_tensor_slices((X_train, y_train)).batch(batch_size).prefetch(1)

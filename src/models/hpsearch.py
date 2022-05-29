@@ -71,7 +71,9 @@ def build_hps(hps_dict):
 
 @click.command()
 @click.argument('data_path')
-def main(data_path):
+@click.argument('hps_space_dir')
+@click.option('-pca', '--use_pca', is_flag=True, default=False, show_default=True, help='Apply pca transform to reject fluff')
+def main(data_path, hps_space_dir, use_pca):
     """
     Args:
         data_path: data_path relative to the root directory
@@ -87,8 +89,8 @@ def main(data_path):
     logger.info((X.shape, y.shape))
 
     # Load hyperparameter search space
-    optimal_hps_path = os.path.join(project_path, 'configs', 'EEGNet_SSVEP', 'hps.yaml')
-    hps_space_path = os.path.join(project_path, 'configs', 'EEGNet_SSVEP', 'hpspace.json')
+    optimal_hps_path = os.path.join(hps_space_dir, 'hps.yaml')
+    hps_space_path = os.path.join(hps_space_dir, 'hpspace.json')
     with open(hps_space_path, 'r') as f:
         hps_dict = json.load(f)
     HPS = build_hps(hps_dict)
@@ -100,10 +102,10 @@ def main(data_path):
         hypermodel=EEGNet_SSVEP(nb_classes=num_targets, Chans=num_channels, Samples=timepoints_stimulus_duration),
         hyperparameters=HPS,
         overwrite=True,
-        directory=os.path.join(project_path, 'logs', 'hps', 'EEGNet')
+        directory=os.path.join(project_path, 'logs', 'hps', os.path.basename(hps_space_dir))
     )
     
-    tuner.search(X=X, y=y, verbose=1)
+    tuner.search(X=X, y=y, use_pca=use_pca, verbose=1)
     best_hps = tuner.get_best_hyperparameters()[0]
     logger.info(best_hps.values)
 
