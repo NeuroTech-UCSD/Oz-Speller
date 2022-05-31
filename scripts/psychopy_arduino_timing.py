@@ -23,9 +23,11 @@ center_flash = True # whether the visual stimuli are only presented at the cente
 flash_mode = 'square' # 'sine', 'square', or 'chirp', 'dual band'
 refresh_rate = 60.02 # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
-stim_duration = 5. # in seconds
-isi_duration = 0.75 # in seconds
-after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
+stim_duration = 1. # in seconds
+# isi_duration = 0.75 # in seconds
+# after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
+isi_duration = 0.1 # in seconds
+after_stim_padding = 0.0 # in seconds, stim remains but the data is discarded
 n_per_class=10
 classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
@@ -154,22 +156,22 @@ if use_dsi7:
 
 if use_arduino:
     import serial, threading
-    arduino = serial.Serial(port='COM3', baudrate=57600, timeout=.1)
+    arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
     arduino_call_num = 0
     with open("light_amp.csv", 'w') as csv_file:
-        csv_file.write('')
+        csv_file.write('time, light_amp\n')
     def record_light_amp():
         global arduino_call_num
         while True:
             try:
                 data = arduino.readline().decode('ascii')[:-1]
-                if arduino_call_num < 10:
+                if arduino_call_num < 100:
                     arduino_call_num+=1
                     continue
-                if arduino_call_num == 10:
+                elif arduino_call_num == 100:
                     arduino_call_num+=1
                     with open("meta.csv", 'w') as csv_file:
-                        csv_file.write(str(time.time()) + '\n')
+                        csv_file.write('0,0,'+str(time.time()) + '\n')
                 with open("light_amp.csv", 'a') as csv_file:
                     csv_file.write(data)
             except UnicodeDecodeError:
@@ -209,18 +211,22 @@ if __name__ == "__main__":
                     core.quit()
             # 750ms fixation cross:
             for frame in range(ms_to_frame(isi_duration*1000, refresh_rate)):
-                if frame == 0:
-                    with open("meta.csv", 'a') as csv_file:
-                        csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(time.time()) + '\n')
+                # if frame == 0:
+                #     with open("meta.csv", 'a') as csv_file:
+                #         csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(time.time()) + '\n')
                 fixation.draw()
                 win.flip()
             # 'stim_duration' seconds stimulation using flashing frequency approximation:
+            phase_offset_str = str(phase_offset)
             phase_offset += 0.00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
             stim_duration_frames = ms_to_frame((stim_duration+after_stim_padding)*1000, refresh_rate) # total number of frames for the stimulation
             frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
             if flash_mode == 'square': # if we want to use binarized square wave visual stimuli
                 trial = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
-                for frame in trial: # present the stimulation frame by frame
+                for i_frame,frame in enumerate(trial): # present the stimulation frame by frame
+                    if i_frame == 0:
+                        with open("meta.csv", 'a') as csv_file:
+                            csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
                     square.color = (frame, frame, frame)
                     square.draw()
                     photosensor.color = (frame, frame, frame)
