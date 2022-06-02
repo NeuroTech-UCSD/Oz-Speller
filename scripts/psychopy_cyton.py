@@ -23,7 +23,7 @@ use_cyton = True
 record_start_time = True
 center_flash = True # whether the visual stimuli are only presented at the center of the screen
 flash_mode = 'square' # 'sine', 'square', or 'chirp', 'dual band'
-refresh_rate = 60.02 # refresh rate of the monitor
+refresh_rate = 60. # refresh rate of the monitor
 use_retina = True # whether the monitor is a retina display
 stim_duration = 1. # in seconds
 # isi_duration = 0.75 # in seconds
@@ -386,6 +386,8 @@ if use_cyton:
         pull_thread.start()
         return inlets, pull_thread
 
+    with open("eeg.csv", 'w') as csv_file:
+        csv_file.write('time, N1P, N2P, N3P, N4P, N5P, N6P, N7P, N8P, D11, D12, D13\n')
     with open("meta.csv", 'w') as csv_file:
         csv_file.write('')
     eeg = []    # receive_data() saves [timepoints by channels] here
@@ -424,7 +426,7 @@ if __name__ == "__main__":
                             inlet.close_stream()
                         stop_cyton.set()
                         board.stop_stream()
-                        with open("eeg.csv", 'w') as csv_file:
+                        with open("eeg.csv", 'a') as csv_file:
                             np.savetxt(csv_file, eeg, delimiter=', ')
                     core.quit()
             # 750ms fixation cross:
@@ -476,9 +478,10 @@ if __name__ == "__main__":
                     square.color = (frame, frame, frame)
                     square.draw()
                     win.flip()
+    time.sleep(1)
     if use_cyton:
-        with open("eeg.csv", 'w') as csv_file:
+        with open("eeg.csv", 'a') as csv_file:
             np.savetxt(csv_file, eeg, delimiter=', ')
-    time.sleep(6)
+    core.quit()
 
 
