@@ -25,20 +25,22 @@ center_flash = True # whether the visual stimuli are only presented at the cente
 flash_mode = 'square' # 'sine', 'square', or 'chirp', 'dual band'
 refresh_rate = 60. # refresh rate of the monitor
 use_retina = True # whether the monitor is a retina display
-stim_duration = 1. # in seconds
-# isi_duration = 0.75 # in seconds
+stim_duration = 5. # in seconds
+isi_duration = 0.75 # in seconds
 # after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
-isi_duration = 0.1 # in seconds
+# isi_duration = 0.1 # in seconds
 after_stim_padding = 0.0 # in seconds, stim remains but the data is discarded
 n_per_class=10
-classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
-         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
-         (10,0),(10,0.5),(10,1),(10,1.5),
-         (11,0),(11,0.5),(11,1),(11,1.5),
-         (12,0),(12,0.5),(12,1),(12,1.5),
-         (13,0),(13,0.5),(13,1),(13,1.5),
-         (14,0),(14,0.5),(14,1),(14,1.5),
-         (15,0),(15,0.5),(15,1),(15,1.5),]
+# classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+#          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+#          (10,0),(10,0.5),(10,1),(10,1.5),
+#          (11,0),(11,0.5),(11,1),(11,1.5),
+#          (12,0),(12,0.5),(12,1),(12,1.5),
+#          (13,0),(13,0.5),(13,1),(13,1.5),
+#          (14,0),(14,0.5),(14,1),(14,1.5),
+#          (15,0),(15,0.5),(15,1),(15,1.5),]
+classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5)]
+
 data = []
 run_count = 0
 first_call = True
@@ -417,7 +419,7 @@ if __name__ == "__main__":
         photosensor = create_photosensor_dot()
         sequence = create_trial_sequence(n_per_class=n_per_class,classes=classes)
         # square.color = (0, 1, 0)
-        for flickering_freq, phase_offset in sequence: # for each trial in the trail sequence
+        for i_trial,(flickering_freq, phase_offset) in enumerate(sequence): # for each trial in the trail sequence
             keys = kb.getKeys() 
             for thisKey in keys:
                 if thisKey=='escape':
@@ -429,12 +431,14 @@ if __name__ == "__main__":
                         with open("eeg.csv", 'a') as csv_file:
                             np.savetxt(csv_file, eeg, delimiter=', ')
                     core.quit()
+            trial_text = visual.TextStim(win, str(i_trial+1)+'/'+str(len(sequence)), color=(-1, -1, -1), colorSpace='rgb')
             # 750ms fixation cross:
             for frame in range(ms_to_frame(isi_duration*1000, refresh_rate)):
                 # if frame == 0:
                 #     with open("meta.csv", 'a') as csv_file:
                 #         csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(time.time()) + '\n')
                 fixation.draw()
+                trial_text.draw()
                 win.flip()
             # 'stim_duration' seconds stimulation using flashing frequency approximation:
             phase_offset_str = str(phase_offset)
