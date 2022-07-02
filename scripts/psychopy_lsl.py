@@ -12,13 +12,14 @@ import numpy as np
 from scipy import signal
 import random
 import sys, time
+from pylsl import local_clock
 sys.path.append('src') # if run from the root project directory
 
 # █████████████████████████████████████████████████████████████████████████████
 
 ## VARIABLES
-use_dsi7 = False
-use_dsi_lsl = True
+use_dsi7 = True
+use_dsi_lsl = False
 use_arduino = False # arduino photosensor for flashing timing test
 use_cyton = False
 record_start_time = True
@@ -26,20 +27,26 @@ center_flash = True # whether the visual stimuli are only presented at the cente
 flash_mode = 'square' # 'sine', 'square', or 'chirp', 'dual band'
 refresh_rate = 60. # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
-stim_duration = 1. # in seconds
-# isi_duration = 0.75 # in seconds
+stim_duration = 5. # in seconds
+isi_duration = 0.75 # in seconds
 # after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
-isi_duration = 0.1 # in seconds
+# isi_duration = 0.1 # in seconds
 after_stim_padding = 0.0 # in seconds, stim remains but the data is discarded
-n_per_class=10
-classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
-         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
-         (10,0),(10,0.5),(10,1),(10,1.5),
-         (11,0),(11,0.5),(11,1),(11,1.5),
-         (12,0),(12,0.5),(12,1),(12,1.5),
-         (13,0),(13,0.5),(13,1),(13,1.5),
-         (14,0),(14,0.5),(14,1),(14,1.5),
-         (15,0),(15,0.5),(15,1),(15,1.5),]
+n_per_class=5
+# classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+#          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+#          (10,0),(10,0.5),(10,1),(10,1.5),
+#          (11,0),(11,0.5),(11,1),(11,1.5),
+#          (12,0),(12,0.5),(12,1),(12,1.5), 
+#          (13,0),(13,0.5),(13,1),(13,1.5),
+#          (14,0),(14,0.5),(14,1),(14,1.5),
+#          (15,0),(15,0.5),(15,1),(15,1.5),]
+classes=[(8,0),(9,1.75),(10,1.5),(11,1.25),(12,1),(13,0.75),(14,0.5),(15,0.25),
+        (8.2,0.35),(9.2,0.1),(10.2,1.85),(11.2,1.6),(12.2,1.35),(13.2,1.1),(14.2,0.85),(15.2,0.6),
+        (8.4,0.7),(9.4,0.45),(10.4,0.2),(11.4,1.95),(12.4,1.7),(13.4,1.45),(14.4,1.2),(15.4,0.95),
+        (8.6,1.05),(9.6,0.8),(10.6,0.55),(11.6,0.3),(12.6,0.05),(13.6,1.8),(14.6,1.55),(15.6,1.3),
+        (8.8,1.4),(9.8,1.15),(10.8,0.9),(11.8,0.65),(12.8,0.4),(13.8,0.15),(14.8,1.9),(15.8,1.65)]
+# classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5)]
 data = []
 run_count = 0
 first_call = True
@@ -77,7 +84,7 @@ def create_flickering_square(size=150):
         pos = [0, 0]
     )
 
-def create_photosensor_dot(size=50):
+def create_photosensor_dot(size=100):
     return visual.Circle(
         win=win,
         units="pix",
@@ -185,7 +192,7 @@ if use_dsi_lsl:
         pull_thread.start()
         return inlets, pull_thread
     
-    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM4','--lsl-stream-name=mystream'],shell=True,stdin=PIPE)
+    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM8','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4
     with open("eeg.csv", 'w') as csv_file:
         csv_file.write('')
     with open("meta.csv", 'w') as csv_file:
@@ -216,7 +223,8 @@ if use_dsi7:
             if sample_data[1] > 1e15: # if Pz saturation error happens
                 quit()
             with open("meta.csv", 'w') as csv_file:
-                csv_file.write(str(time.time()) + '\n')
+                # csv_file.write(str(time.time()) + '\n')
+                csv_file.write(str(local_clock()) + '\n')
             first_call = False
         if run_count >= 300: # save data every second
             run_count = 0
@@ -226,7 +234,7 @@ if use_dsi7:
             data = []
     def record():
         args = getattr( sys, 'argv', [ '' ] )
-        if sys.platform.lower().startswith( 'win' ): default_port = 'COM4'
+        if sys.platform.lower().startswith( 'win' ): default_port = 'COM9' #COM4, COM8, COM9
         else:                                        default_port = '/dev/cu.DSI7-0009.BluetoothSeri'
         # first command-line argument: serial port address
         if len( args ) > 1: port = args[ 1 ]
@@ -245,7 +253,7 @@ if use_dsi7:
     if __name__ == "__main__": 
         recording = multiprocessing.Process(target=record,daemon=True)
         recording.start()
-        time.sleep(6)
+        time.sleep(15)
 
 # █████████████████████████████████████████████████████████████████████████████
 
@@ -512,7 +520,7 @@ if __name__ == "__main__":
         photosensor = create_photosensor_dot()
         sequence = create_trial_sequence(n_per_class=n_per_class,classes=classes)
         # square.color = (0, 1, 0)
-        for flickering_freq, phase_offset in sequence: # for each trial in the trail sequence
+        for i_trial,(flickering_freq, phase_offset) in enumerate(sequence): # for each trial in the trail sequence
             keys = kb.getKeys() 
             for thisKey in keys:
                 if thisKey=='escape':
@@ -530,12 +538,16 @@ if __name__ == "__main__":
                         with open("eeg.csv", 'a') as csv_file:
                             np.savetxt(csv_file, eeg, delimiter=', ')
                     core.quit()
+            trial_text = visual.TextStim(win, str(i_trial+1)+'/'+str(len(sequence)), color=(-1, -1, -1), colorSpace='rgb')
             # 750ms fixation cross:
             for frame in range(ms_to_frame(isi_duration*1000, refresh_rate)):
                 # if frame == 0:
                 #     with open("meta.csv", 'a') as csv_file:
                 #         csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(time.time()) + '\n')
                 fixation.draw()
+                trial_text.draw()
+                photosensor.color = (-1, -1, -1)
+                photosensor.draw()
                 win.flip()
             # 'stim_duration' seconds stimulation using flashing frequency approximation:
             phase_offset_str = str(phase_offset)
@@ -551,7 +563,8 @@ if __name__ == "__main__":
                             csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(local_clock()) + '\n')
                     square.color = (frame, frame, frame)
                     square.draw()
-                    photosensor.color = (frame, frame, frame)
+                    # photosensor.color = (frame, frame, frame)
+                    photosensor.color = (1, 1, 1)
                     photosensor.draw()
                     win.flip()
             elif flash_mode == 'sine': # if we want to use smoothed sine wave visual stimuli
@@ -579,7 +592,7 @@ if __name__ == "__main__":
                     square.color = (frame, frame, frame)
                     square.draw()
                     win.flip()
-    time.sleep(1)
+    time.sleep(5)
     if use_dsi_lsl:
         for inlet in inlets:
             inlet.close_stream()
