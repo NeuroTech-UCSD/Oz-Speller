@@ -32,12 +32,12 @@ height = 864
 flash_mode = 'square' # 'sine', 'square', or 'chirp', 'dual band'
 refresh_rate = 60. # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
-stim_duration = 5. # in seconds
-isi_duration = 0.75 # in seconds
+stim_duration = 1. # in seconds
+isi_duration = 1 # in seconds
 # after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
 # isi_duration = 0.1 # in seconds
 after_stim_padding = 0.0 # in seconds, stim remains but the data is discarded
-n_per_class=5
+n_per_class=20
 keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
          (10,0),(10,0.5),(10,1),(10,1.5),
