@@ -21,7 +21,7 @@ sys.path.append('src') # if run from the root project directory
 use_dsi7 = False
 use_dsi_trigger = True
 use_dsi_lsl = False
-use_arduino = False # arduino photosensor for flashing timing test
+use_arduino = True # arduino photosensor for flashing timing test
 use_cyton = False
 use_photosensor = False
 record_start_time = True
@@ -30,14 +30,14 @@ keyboard_flash = True
 width = 1536
 height = 864
 flash_mode = 'square' # 'sine', 'square', or 'chirp', 'dual band'
-refresh_rate = 60. # refresh rate of the monitor
+refresh_rate = 60.02 # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
 stim_duration = 3. # in seconds
 isi_duration = 1 # in seconds
 # after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
 # isi_duration = 0.1 # in seconds
 after_stim_padding = 0.0 # in seconds, stim remains but the data is discarded
-n_per_class=5
+n_per_class=45
 # keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
 #          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
 #          (10,0),(10,0.5),(10,1),(10,1.5),
@@ -54,7 +54,8 @@ keyboard_classes=[( 8,0),( 8,0.5),( 8,1),
 #         (8.4,0.7),(9.4,0.45),(10.4,0.2),(11.4,1.95),(12.4,1.7),(13.4,1.45),(14.4,1.2),(15.4,0.95),
 #         (8.6,1.05),(9.6,0.8),(10.6,0.55),(11.6,0.3),(12.6,0.05),(13.6,1.8),(14.6,1.55),(15.6,1.3),
 #         (8.8,1.4),(9.8,1.15),(10.8,0.9),(11.8,0.65),(12.8,0.4),(13.8,0.15),(14.8,1.9),(15.8,1.65)]
-classes=[(15,0),(15,0.5),(15,1)]
+# classes=[(15,0),(15,0.5),(15,1)]
+classes=[(15,0.5)]
 data = []
 run_count = 0
 first_call = True
@@ -312,10 +313,10 @@ if use_arduino:
                 elif arduino_call_num == 100:
                     arduino_call_num+=1
                     with open("meta.csv", 'w') as csv_file:
-                        csv_file.write('0,0,'+str(time.time()) + '\n')
+                        csv_file.write('0,0,'+str(local_clock()) + '\n')
                 with open("light_amp.csv", 'a') as csv_file:
                     # csv_file.write(data)
-                    csv_file.write(str(time.time())+', '+str(data)+'\n')
+                    csv_file.write(str(local_clock())+', '+str(data)+'\n')
             except UnicodeDecodeError and ValueError:
                 pass
     if __name__ == "__main__": 
@@ -594,7 +595,7 @@ if __name__ == "__main__":
                         with open("meta.csv", 'a') as csv_file:
                             # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
                             csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(local_clock()) + '\n')
-                        if use_dsi_trigger: # send trigger signal to the trigger channel
+                        if use_dsi_trigger and (use_dsi_lsl or use_dsi7): # send trigger signal to the trigger channel
                             msg = b'\x01\xe1\x01\x00\x01'
                             dsi_serial.write(msg)
                     square.color = (frame, frame, frame)
@@ -680,19 +681,25 @@ if __name__ == "__main__":
                     else:
                         key.color = (-1,-1,-1)
                         # key.color = (key_frame,key_frame,key_frame)
-                        if key_counter < 4:
+                        if key_counter < 9:
                             key.draw()
                             key_counter += 1
                     # key.color = (key_frame,key_frame,key_frame)
                     # key.draw()
                 win.flip()
-                if i_frame == 0 and use_dsi_trigger and (use_dsi_lsl or use_dsi7):
-                    msg = b'\x01\xe1\x01\x00\x01'
-                    dsi_serial.write(msg)
-        for i_trial,(flickering_freq, phase_offset) in enumerate(sequence):
-            with open("meta.csv", 'a') as csv_file:
-                # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
-                csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
+                if i_frame == 0:
+                    if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
+                        msg = b'\x01\xe1\x01\x00\x01'
+                        dsi_serial.write(msg)
+                    else:
+                        with open("meta.csv", 'a') as csv_file:
+                            # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
+                            csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
+        if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
+            for i_trial,(flickering_freq, phase_offset) in enumerate(sequence):
+                with open("meta.csv", 'a') as csv_file:
+                    # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
+                    csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
     time.sleep(5)
     
     if use_dsi_lsl:
