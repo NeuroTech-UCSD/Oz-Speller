@@ -16,24 +16,30 @@ sys.path.append('src') # if run from the root project directory
 # █████████████████████████████████████████████████████████████████████████████
 
 ## VARIABLES
-with open("reports/trained_models/s32/fbtdca_2s.pkl", 'rb') as filehandler:
+# with open("reports/trained_models/s32/fbtdca_2s.pkl", 'rb') as filehandler:
+#     model = pickle.load(filehandler)
+with open("reports/trained_models/n9/fbtdca_1s.pkl", 'rb') as filehandler:
     model = pickle.load(filehandler)
 use_retina = False # whether the monitor is a retina display
 use_dsi_lsl = True
 use_dsi_trigger = True
 width = 1536
 height = 864
-refresh_rate = 60 # refresh rate of the monitor
-stim_duration = 2.3
+refresh_rate = 60.02 # refresh rate of the monitor
+stim_duration = 1.4
 isi_duration = 0.75 # in seconds
-classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
-         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
-         (10,0),(10,0.5),(10,1),(10,1.5),
-         (11,0),(11,0.5),(11,1),(11,1.5),
-         (12,0),(12,0.5),(12,1),(12,1.5), 
-         (13,0),(13,0.5),(13,1),(13,1.5),
-         (14,0),(14,0.5),(14,1),(14,1.5),
-         (15,0),(15,0.5),(15,1),(15,1.5),]
+# classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+#          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+#          (10,0),(10,0.5),(10,1),(10,1.5),
+#          (11,0),(11,0.5),(11,1),(11,1.5),
+#          (12,0),(12,0.5),(12,1),(12,1.5), 
+#          (13,0),(13,0.5),(13,1),(13,1.5),
+#          (14,0),(14,0.5),(14,1),(14,1.5),
+#          (15,0),(15,0.5),(15,1),(15,1.5),]
+classes=[( 8,0),( 8,0.5),( 8,1),
+         (10,0),(10,0.5),(10,1),
+         (15,0),(15,0.5),(15,1),]
+n_keyboard_classes = len(classes)
 # classes=[( 8,  0),( 9,  0),(10,  0),(11,  0),(12,  0),(13,  0),(14,  0),(15,  0),
 #          ( 8,0.5),( 9,0.5),(10,0.5),(11,0.5),(12,0.5),(13,0.5),(14,0.5),(15,0.5),
 #          ( 8,  1),( 9,  1),(10,  1),(11,  1),(12,  1),(13,  1),(14,  1),(15,  1),
@@ -47,15 +53,16 @@ def ms_to_frame(ms, fs):
     dt = 1000 / fs
     return np.round(ms / dt).astype(int)
 
-def create_flickering_square(size=130, pos=[0,0]):
+def create_flickering_square(size=100, pos=[0,0]):
     return visual.Rect(
         win=win,
         units="pix",
         width=size,
         height=size,
         fillColor='white',
-        lineColor='white',
-        lineWidth = 1,
+        # lineColor='white',
+        interpolate = False,
+        lineWidth = 0,
         pos = pos
     )
 
@@ -72,6 +79,14 @@ def create_keyboard():
                         pos=[-width/2+130*5+70,height/2-90-450-200])])
     keyboard.extend([create_flickering_square(pos=[-width/2+90+70*15+i*150,height/2-90-450-200]) for i in range (3)])
     return keyboard
+
+def create_9_keys():
+    keys = []
+    keys.extend([create_flickering_square(pos=[-width/2+300,height/2-90-i*270-80]) for i in range (3)])
+    keys.extend([create_flickering_square(pos=[-width/2+450+300,height/2-90-i*270-80]) for i in range (3)])
+    keys.extend([create_flickering_square(pos=[-width/2+900+300,height/2-90-i*270-80]) for i in range (3)])
+    # keys.extend([create_flickering_square(pos=[-width/2+450+i*250,height/2-90-250-200]) for i in range (3)])
+    return keys
 
 def create_key_chars():
     pass
@@ -184,7 +199,10 @@ if use_dsi_lsl:
 if __name__ == "__main__": 
     kb = keyboard.Keyboard()
     win = visual.Window(
-        screen = 0,
+        size = [1920,1080],
+        checkTiming = True,
+        allowGUI = False,
+        # screen = 0,
         fullscr = True,
         # color = [-1,-1,-1], # black
         useRetina = use_retina
@@ -193,10 +211,11 @@ if __name__ == "__main__":
     if use_retina:
         win_w,win_h = win_w/2,win_h/2
 
-    flickering_keyboard = create_keyboard()
+    # flickering_keyboard = create_keyboard()
+    flickering_keyboard = create_9_keys()
     stim_duration_frames = ms_to_frame((stim_duration)*1000, refresh_rate) # total number of frames for the stimulation
     frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
-    flickering_frames = np.zeros((len(frame_indices),32))
+    flickering_frames = np.zeros((len(frame_indices),n_keyboard_classes))
     for i_class,(flickering_freq,phase_offset) in enumerate(classes):
         phase_offset += .00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
         flickering_frames[:,i_class] = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
@@ -211,30 +230,53 @@ if __name__ == "__main__":
                     os.kill(p.pid, sig.CTRL_C_EVENT)
                 core.quit()
         for i_frame,frame in enumerate(flickering_frames):
+            next_flip = win.getFutureFlipTime()
+            for i_key,(key, key_frame) in enumerate(zip(flickering_keyboard,frame)):
+                # if i_key == 0:
+                #     key.color = (key_frame,key_frame,key_frame)
+                # else:
+                #     key.color = (-1,-1,-1)
+                key.color = (key_frame,key_frame,key_frame)
+                key.draw()
+            if core.getTime() > next_flip:
+                # n_skip = int((core.getTime()-next_flip)/0.016696429999137764)+1
+                # print(str(i_trial)+', '+str(i_frame)+', '+str(n_skip))
+                # next(islice(iter_frame, n_skip,n_skip), None)
+                if use_dsi_trigger and use_dsi_lsl:
+                    msg = b'\x01\xe1\x01\x00\x02'
+                    dsi_serial.write(msg)
+                for failure_frame in range(15):
+                    for i_key,key in enumerate(flickering_keyboard):
+                        key.color = (1,-1,-1)
+                        key.draw()
+                    win.flip()
+            win.flip()
             if i_frame == 0 and use_dsi_trigger and use_dsi_lsl:
                 msg = b'\x01\xe1\x01\x00\x01'
                 dsi_serial.write(msg)
-            for i_key,(key, key_frame) in enumerate(zip(flickering_keyboard,frame)):
-                if i_key == 0:
-                    key.color = (key_frame,key_frame,key_frame)
-                else:
-                    key.color = (-1,-1,-1)
-                key.draw()
-            win.flip()
-        trial_eeg = np.array(eeg)[-750:]
-        # print(trial_eeg.shape)
-        # print(trial_eeg[-1])
-        # print(np.where(trial_eeg[:,-1]==1))
-        # print(np.where(trial_eeg[:,-1]==1)[0][-1])
-        # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][-1]])
-        # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0]]) 
-        print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0],:])
-        # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,1:-1].T.shape)
-        # prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,1:-1].T)
-        # print(prediction)
+
+        if use_dsi_lsl:
+            trial_eeg = np.array(eeg)[-400:]
+            # print(trial_eeg.shape)
+            # print(trial_eeg[-1])
+            # print(np.where(trial_eeg[:,-1]==2)[0])
+            # print(np.where(trial_eeg[:,-1]==1)[0][-1])
+            # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][-1]])
+            # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0]]) 
+            # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0],:])
+            # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,1:-1].T.shape)
+            if(len(np.where(trial_eeg[:,-1]==2)[0])==0):
+                prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,1:-1].T)
+            else:
+                prediction = [-1]
+            # print(prediction)
         for frame in range(ms_to_frame(isi_duration*1000, refresh_rate)):
-            for key in flickering_keyboard:
-                key.color = (1,1,1)
-                key.draw()
+            for i_key,key in enumerate(flickering_keyboard):
+                if use_dsi_lsl and i_key == prediction[0]:
+                    key.color = (-1,1,-1)
+                    key.draw()
+                else:
+                    key.color = (1,1,1)
+                    key.draw()
             win.flip()
         

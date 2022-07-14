@@ -12,13 +12,14 @@ import numpy as np
 from scipy import signal
 import random
 import sys, time, serial
+from itertools import islice
 from pylsl import local_clock
 sys.path.append('src') # if run from the root project directory
 
 # █████████████████████████████████████████████████████████████████████████████
 
 ## VARIABLES
-use_dsi7 = False
+use_dsi7 = True
 use_dsi_trigger = True
 use_dsi_lsl = False
 use_arduino = True # arduino photosensor for flashing timing test
@@ -37,18 +38,18 @@ isi_duration = 1 # in seconds
 # after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
 # isi_duration = 0.1 # in seconds
 after_stim_padding = 0.0 # in seconds, stim remains but the data is discarded
-n_per_class=45
-# keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
-#          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
-#          (10,0),(10,0.5),(10,1),(10,1.5),
-#          (11,0),(11,0.5),(11,1),(11,1.5),
-#          (12,0),(12,0.5),(12,1),(12,1.5), 
-#          (13,0),(13,0.5),(13,1),(13,1.5),
-#          (14,0),(14,0.5),(14,1),(14,1.5),
-#          (15,0),(15,0.5),(15,1),(15,1.5),]
-keyboard_classes=[( 8,0),( 8,0.5),( 8,1),
-         (10,0),(10,0.5),(10,1),
-         (15,0),(15,0.5),(15,1),]
+n_per_class=20
+keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+         (10,0),(10,0.5),(10,1),(10,1.5),
+         (11,0),(11,0.5),(11,1),(11,1.5),
+         (12,0),(12,0.5),(12,1),(12,1.5), 
+         (13,0),(13,0.5),(13,1),(13,1.5),
+         (14,0),(14,0.5),(14,1),(14,1.5),
+         (15,0),(15,0.5),(15,1),(15,1.5),]
+# keyboard_classes=[( 8,0),( 8,0.5),( 8,1),
+#          (10,0),(10,0.5),(10,1),
+#          (15,0),(15,0.5),(15,1),]
 # classes=[(8,0),(9,1.75),(10,1.5),(11,1.25),(12,1),(13,0.75),(14,0.5),(15,0.25),
 #         (8.2,0.35),(9.2,0.1),(10.2,1.85),(11.2,1.6),(12.2,1.35),(13.2,1.1),(14.2,0.85),(15.2,0.6),
 #         (8.4,0.7),(9.4,0.45),(10.4,0.2),(11.4,1.95),(12.4,1.7),(13.4,1.45),(14.4,1.2),(15.4,0.95),
@@ -81,15 +82,16 @@ def ms_to_frame(ms, fs):
     dt = 1000 / fs
     return np.round(ms / dt).astype(int)
 
-def create_flickering_square(size=150, pos=[0,0]):
+def create_flickering_square(size=100, pos=[0,0]):
     return visual.Rect(
         win=win,
         units="pix",
         width=size,
         height=size,
         fillColor='white',
-        lineColor='white',
-        lineWidth = 1,
+        # lineColor='white',
+        interpolate = False,
+        lineWidth = 0,
         pos = pos
     )
 
@@ -124,7 +126,9 @@ def create_keyboard():
     keyboard.extend([create_flickering_square(pos=[-width/2+90+70+i*150,height/2-90-150-200]) for i in range (9)])
     keyboard.extend([create_flickering_square(pos=[-width/2+90+140+i*150,height/2-90-300-200]) for i in range (8)])
     keyboard.extend([create_flickering_square(pos=[-width/2+90+210,height/2-90-450-200])])
-    keyboard.extend([visual.Rect(win=win,units='pix',width=100*5,height=100,fillColor='white',lineColor='white',lineWidth=1,
+    # keyboard.extend([visual.Rect(win=win,units='pix',width=100*5,height=100,fillColor='white',lineColor='white',lineWidth=1,
+    #                     pos=[-width/2+130*5+70,height/2-90-450-200])])
+    keyboard.extend([visual.Rect(win=win,units='pix',width=100*5,height=100,fillColor='white',lineWidth=0,
                         pos=[-width/2+130*5+70,height/2-90-450-200])])
     keyboard.extend([create_flickering_square(pos=[-width/2+90+70*15+i*150,height/2-90-450-200]) for i in range (3)])
     return keyboard
@@ -292,38 +296,45 @@ if use_dsi7:
 
 ## Arduino Photosensor for Timing
 if use_arduino:
-    import serial, threading
-    # arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
-    arduino = serial.Serial(port='COM3', baudrate=19200, timeout=.1)
-    # arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.1)
-    arduino_call_num = 0
-    with open("light_amp.csv", 'w') as csv_file:
-        csv_file.write('time, light_amp\n')
-    def record_light_amp():
-        global arduino_call_num
-        while True:
-            try:
-                # data = arduino.readline().decode('ascii')[:-1]
-                data = int.from_bytes(arduino.read(), "big")
-                if data > 100:
-                    data = 0
-                if arduino_call_num < 100:
-                    arduino_call_num+=1
-                    continue
-                elif arduino_call_num == 100:
-                    arduino_call_num+=1
-                    with open("meta.csv", 'w') as csv_file:
-                        csv_file.write('0,0,'+str(local_clock()) + '\n')
-                with open("light_amp.csv", 'a') as csv_file:
-                    # csv_file.write(data)
-                    csv_file.write(str(local_clock())+', '+str(data)+'\n')
-            except UnicodeDecodeError and ValueError:
-                pass
-    if __name__ == "__main__": 
-        # recording_light_amp = multiprocessing.Process(target=record_light_amp,daemon=True)
-        recording_light_amp = threading.Thread(target=record_light_amp,daemon=True)
-        recording_light_amp.start()
-        time.sleep(2)
+    from sys import executable
+    import os
+    from subprocess import Popen
+    # Popen([executable,  os.path.join(os.getcwd(), 'run_arduino_photosensor.py')])
+    Popen([executable,  os.path.join(os.getcwd(), 'scripts', 'run_arduino_photosensor.py')])
+    time.sleep(2)
+
+    # import serial, threading, multiprocessing
+    # # arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
+    # arduino = serial.Serial(port='COM3', baudrate=19200, timeout=.1)
+    # # arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.1)
+    # arduino_call_num = 0
+    # with open("light_amp.csv", 'w') as csv_file:
+    #     csv_file.write('time, light_amp\n')
+    # def record_light_amp():
+    #     global arduino_call_num
+    #     while True:
+    #         try:
+    #             # data = arduino.readline().decode('ascii')[:-1]
+    #             data = int.from_bytes(arduino.read(), "big")
+    #             if data > 100:
+    #                 data = 0
+    #             if arduino_call_num < 100:
+    #                 arduino_call_num+=1
+    #                 continue
+    #             elif arduino_call_num == 100:
+    #                 arduino_call_num+=1
+    #                 with open("meta.csv", 'w') as csv_file:
+    #                     csv_file.write('0,0,'+str(local_clock()) + '\n')
+    #             with open("light_amp.csv", 'a') as csv_file:
+    #                 # csv_file.write(data)
+    #                 csv_file.write(str(local_clock())+', '+str(data)+'\n')
+    #         except UnicodeDecodeError and ValueError:
+    #             pass
+    # if __name__ == "__main__": 
+    #     # recording_light_amp = multiprocessing.Process(target=record_light_amp,daemon=True)
+    #     recording_light_amp = threading.Thread(target=record_light_amp,daemon=True)
+    #     recording_light_amp.start()
+    #     # time.sleep(2)
 
 # █████████████████████████████████████████████████████████████████████████████
 
@@ -539,8 +550,15 @@ if use_cyton:
 if __name__ == "__main__": 
     kb = keyboard.Keyboard()
     win = visual.Window(
-        screen = 0,
+        size = [1920,1080],
+        checkTiming = True,
+        allowGUI = False,
+        # waitBlanking = False,
+        # waitBlanking = True,
+        # screen = 1,
+        # winType="pyglet",
         fullscr = True,
+        # multiSample = True,
         # color = [-1,-1,-1], # black
         useRetina = use_retina
     )
@@ -632,8 +650,8 @@ if __name__ == "__main__":
                     square.draw()
                     win.flip()
     if keyboard_flash: # if we want the visual stimuli to be presented in the keyboard layout
-        # flickering_keyboard = create_keyboard()
-        flickering_keyboard = create_9_keys()
+        flickering_keyboard = create_keyboard()
+        # flickering_keyboard = create_9_keys()
         stim_duration_frames = ms_to_frame((stim_duration)*1000, refresh_rate) # total number of frames for the stimulation
         frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
         flickering_frames = np.zeros((len(frame_indices),32))
@@ -672,34 +690,60 @@ if __name__ == "__main__":
                         key.color = (-1,-1,-1)
                     key.draw()
                 win.flip()
-            for i_frame,frame in enumerate(flickering_frames):
+            # last_flip = win.getFutureFlipTime()
+            iter_frame = iter(enumerate(flickering_frames))
+            next_flip = win.getFutureFlipTime()
+            for i_frame,frame in iter_frame:
                 key_counter = 0
-                for i_key,(key, key_frame) in enumerate(zip(flickering_keyboard,frame)):
-                    if i_key == class_num:
-                        key.color = (key_frame,key_frame,key_frame)
-                        key.draw()
-                    else:
-                        key.color = (-1,-1,-1)
-                        # key.color = (key_frame,key_frame,key_frame)
-                        if key_counter < 9:
-                            key.draw()
-                            key_counter += 1
-                    # key.color = (key_frame,key_frame,key_frame)
-                    # key.draw()
+                # next_flip = win.getFutureFlipTime()
+                # while next_flip == last_flip:
+                #     next_flip = win.getFutureFlipTime()
+                iter_keyboard = iter(enumerate(zip(flickering_keyboard,frame)))
+                for i_key,(key, key_frame) in iter_keyboard:
+                    # if i_key == class_num:
+                    #     key.color = (key_frame,key_frame,key_frame)
+                    #     key.draw()
+                    # else:
+                    #     # key.color = (-1,-1,-1)
+                    #     key.color = (key_frame,key_frame,key_frame)
+                    #     if key_counter < 9:
+                    #         key.draw()
+                    #         key_counter += 1
+                    key.color = (key_frame,key_frame,key_frame)
+                    key.draw()
+                    if core.getTime() > (next_flip + 0.004):
+                        break
+                # if core.getTime() > (next_flip):
+                if core.getTime() > (next_flip + 0.004):
+                    n_skip = int((core.getTime()-next_flip )/0.016696429999137764)+1
+                    print(str(i_trial)+', '+str(i_frame)+', '+str(n_skip))
+                    next(islice(iter_frame, n_skip,n_skip), None)
                 win.flip()
+                next_flip = win.getFutureFlipTime()
+                    # for i in range(n_skip):
+                    #     next(iter_frame, None)
+                # else:
+                #     win.clearBuffer()
+                    # last_flip = next_flip
+                # print(win.getFutureFlipTime())
+                # print(core.getTime())
+                # print(win.monitorFramePeriod)
                 if i_frame == 0:
                     if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
                         msg = b'\x01\xe1\x01\x00\x01'
                         dsi_serial.write(msg)
-                    else:
-                        with open("meta.csv", 'a') as csv_file:
-                            # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
-                            csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
-        if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
-            for i_trial,(flickering_freq, phase_offset) in enumerate(sequence):
-                with open("meta.csv", 'a') as csv_file:
-                    # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
-                    csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
+                    # else:
+                    #     with open("meta.csv", 'a') as csv_file:
+                    #         # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
+                    #         csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
+                    with open("meta.csv", 'a') as csv_file:
+                        csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
+            # print(win.getMsPerFrame())
+        # if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
+        #     for i_trial,(flickering_freq, phase_offset) in enumerate(sequence):
+        #         with open("meta.csv", 'a') as csv_file:
+        #             # csv_file.write(str(flickering_freq)+', '+phase_offset_str + ', ' + str(time.time()) + '\n')
+        #             csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(local_clock()) + '\n')
     time.sleep(5)
     
     if use_dsi_lsl:
