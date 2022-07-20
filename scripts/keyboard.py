@@ -18,15 +18,22 @@ sys.path.append('src') # if run from the root project directory
 ## VARIABLES
 # with open("reports/trained_models/s32/fbtdca_2s.pkl", 'rb') as filehandler:
 #     model = pickle.load(filehandler)
-with open("reports/trained_models/n9/fbtdca_1s.pkl", 'rb') as filehandler:
+# with open("reports/trained_models/n9/fbtdca_1s.pkl", 'rb') as filehandler:
+#     model = pickle.load(filehandler)
+# with open("reports/trained_models/nx9/fbtdca_1400ms.pkl", 'rb') as filehandler:
+#     model = pickle.load(filehandler)
+with open("reports/trained_models/nx9/fbtdca_600ms_2.pkl", 'rb') as filehandler:
     model = pickle.load(filehandler)
+# with open("reports/trained_models/n12/fbtdca_1s.pkl", 'rb') as filehandler:
+#     model = pickle.load(filehandler)
 use_retina = False # whether the monitor is a retina display
 use_dsi_lsl = True
 use_dsi_trigger = True
 width = 1536
 height = 864
 refresh_rate = 60.02 # refresh rate of the monitor
-stim_duration = 1.4
+# stim_duration = 1.4
+stim_duration = 0.9
 isi_duration = 0.75 # in seconds
 # classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
 #          ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
@@ -39,6 +46,9 @@ isi_duration = 0.75 # in seconds
 classes=[( 8,0),( 8,0.5),( 8,1),
          (10,0),(10,0.5),(10,1),
          (15,0),(15,0.5),(15,1),]
+# classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+#          (10,0),(10,0.5),(10,1),(10,1.5),
+#          (13,0),(13,0.5),(13,1),(13,1.5),]
 n_keyboard_classes = len(classes)
 # classes=[( 8,  0),( 9,  0),(10,  0),(11,  0),(12,  0),(13,  0),(14,  0),(15,  0),
 #          ( 8,0.5),( 9,0.5),(10,0.5),(11,0.5),(12,0.5),(13,0.5),(14,0.5),(15,0.5),
@@ -53,7 +63,7 @@ def ms_to_frame(ms, fs):
     dt = 1000 / fs
     return np.round(ms / dt).astype(int)
 
-def create_flickering_square(size=100, pos=[0,0]):
+def create_flickering_square(size=120, pos=[0,0]):
     return visual.Rect(
         win=win,
         units="pix",
@@ -85,6 +95,14 @@ def create_9_keys():
     keys.extend([create_flickering_square(pos=[-width/2+300,height/2-90-i*270-80]) for i in range (3)])
     keys.extend([create_flickering_square(pos=[-width/2+450+300,height/2-90-i*270-80]) for i in range (3)])
     keys.extend([create_flickering_square(pos=[-width/2+900+300,height/2-90-i*270-80]) for i in range (3)])
+    # keys.extend([create_flickering_square(pos=[-width/2+450+i*250,height/2-90-250-200]) for i in range (3)])
+    return keys
+
+def create_12_keys():
+    keys = []
+    keys.extend([create_flickering_square(pos=[-width/2+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+450+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+900+300,height/2-90-i*200-80]) for i in range (4)])
     # keys.extend([create_flickering_square(pos=[-width/2+450+i*250,height/2-90-250-200]) for i in range (3)])
     return keys
 
@@ -179,7 +197,9 @@ if use_dsi_lsl:
         pull_thread.start()
         return inlets, pull_thread
     
-    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM8','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4
+    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM10','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4
+    # p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM8','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4
+
     # with open("eeg.csv", 'w') as csv_file:
     #     csv_file.write('')
     # with open("meta.csv", 'w') as csv_file:
@@ -256,7 +276,10 @@ if __name__ == "__main__":
                 dsi_serial.write(msg)
 
         if use_dsi_lsl:
-            trial_eeg = np.array(eeg)[-400:]
+            # trial_eeg = np.array(eeg)[-400:]
+            # trial_eeg = np.array(eeg)[-510:]
+            # trial_eeg = np.array(eeg)[-240:]
+            trial_eeg = np.array(eeg)[-300:]
             # print(trial_eeg.shape)
             # print(trial_eeg[-1])
             # print(np.where(trial_eeg[:,-1]==2)[0])
@@ -266,7 +289,12 @@ if __name__ == "__main__":
             # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0],:])
             # print(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,1:-1].T.shape)
             if(len(np.where(trial_eeg[:,-1]==2)[0])==0):
-                prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,1:-1].T)
+                # prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,1:-1].T)
+                # DSI-24
+                dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
+                # prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:,dsi24chans].T)
+                prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:np.where(trial_eeg[:,-1]==1)[0][0]+40+185,dsi24chans].T)
+                # prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1)[0][0]+40:np.where(trial_eeg[:,-1]==1)[0][0]+40+245,dsi24chans].T)
             else:
                 prediction = [-1]
             # print(prediction)

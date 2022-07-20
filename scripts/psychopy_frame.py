@@ -21,7 +21,7 @@ sys.path.append('src') # if run from the root project directory
 ## VARIABLES
 use_dsi7 = False
 use_dsi_trigger = True
-use_dsi_lsl = True
+use_dsi_lsl = False
 use_arduino = False # arduino photosensor for flashing timing test
 use_cyton = False
 use_photosensor = False
@@ -33,7 +33,7 @@ height = 864
 flash_mode = 'square' # 'sine', 'square', or 'chirp', 'dual band'
 refresh_rate = 60.02 # refresh rate of the monitor
 use_retina = False # whether the monitor is a retina display
-stim_duration = 3. # in seconds
+stim_duration = 2. # in seconds
 isi_duration = 1 # in seconds
 # after_stim_padding = 0.25 # in seconds, stim remains but the data is discarded
 # isi_duration = 0.1 # in seconds
@@ -47,6 +47,18 @@ n_per_class=10
 #          (13,0),(13,0.5),(13,1),(13,1.5),
 #          (14,0),(14,0.5),(14,1),(14,1.5),
 #          (15,0),(15,0.5),(15,1),(15,1.5),]
+# keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+#          (10,0),(10,0.5),(10,1),(10,1.5),
+#          (13,0),(13,0.5),(13,1),(13,1.5),]
+# keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+#         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+#          (10,0),(10,0.5),(10,1),(10,1.5),
+#          (11,0),(11,0.5),(11,1),(11,1.5),
+#          (13,0),(13,0.5),(13,1),(13,1.5),]
+# keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+#         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+#          (10,0),(10,0.5),(10,1),(10,1.5),
+#          (11,0),(11,0.5),(11,1),(11,1.5),]
 keyboard_classes=[( 8,0),( 8,0.5),( 8,1),
          (10,0),(10,0.5),(10,1),
          (15,0),(15,0.5),(15,1),]
@@ -56,7 +68,7 @@ n_keyboard_classes = len(keyboard_classes)
 #         (8.4,0.7),(9.4,0.45),(10.4,0.2),(11.4,1.95),(12.4,1.7),(13.4,1.45),(14.4,1.2),(15.4,0.95),
 #         (8.6,1.05),(9.6,0.8),(10.6,0.55),(11.6,0.3),(12.6,0.05),(13.6,1.8),(14.6,1.55),(15.6,1.3),
 #         (8.8,1.4),(9.8,1.15),(10.8,0.9),(11.8,0.65),(12.8,0.4),(13.8,0.15),(14.8,1.9),(15.8,1.65)]
-classes=[( 8,0),( 8,0.5),( 8,1)]
+classes=[(15,0),(15,0.5),(15,1)]
 # classes=[(15,0.5)]
 data = []
 run_count = 0
@@ -83,13 +95,13 @@ def ms_to_frame(ms, fs):
     dt = 1000 / fs
     return np.round(ms / dt).astype(int)
 
-def create_flickering_square(size=150, pos=[0,0]):
+def create_flickering_square(size=120, pos=[0,0],color='white'):
     return visual.Rect(
         win=win,
         units="pix",
         width=size,
         height=size,
-        fillColor='white',
+        fillColor=color,
         # lineColor='white',
         interpolate = False,
         lineWidth = 0,
@@ -139,6 +151,34 @@ def create_9_keys():
     keys.extend([create_flickering_square(pos=[-width/2+300,height/2-90-i*270-80]) for i in range (3)])
     keys.extend([create_flickering_square(pos=[-width/2+450+300,height/2-90-i*270-80]) for i in range (3)])
     keys.extend([create_flickering_square(pos=[-width/2+900+300,height/2-90-i*270-80]) for i in range (3)])
+    # keys.extend([create_flickering_square(pos=[-width/2+450+i*250,height/2-90-250-200]) for i in range (3)])
+    return keys
+
+def create_12_keys():
+    keys = []
+    keys.extend([create_flickering_square(pos=[-width/2+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+450+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+900+300,height/2-90-i*200-80]) for i in range (4)])
+    # keys.extend([create_flickering_square(pos=[-width/2+450+i*250,height/2-90-250-200]) for i in range (3)])
+    return keys
+
+def create_16_keys(color='white'):
+    keys = []
+    keys.extend([create_flickering_square(pos=[-width/2+300,height/2-90-i*200-80],color=color) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+200+300,height/2-90-i*200-80],color=color) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+400+300,height/2-90-i*200-80],color=color) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+600+300,height/2-90-i*200-80],color=color) for i in range (4)])
+    # keys.extend([create_flickering_square(pos=[-width/2+800+300,height/2-90-i*200-80]) for i in range (4)])
+    # keys.extend([create_flickering_square(pos=[-width/2+450+i*250,height/2-90-250-200]) for i in range (3)])
+    return keys
+
+def create_20_keys():
+    keys = []
+    keys.extend([create_flickering_square(pos=[-width/2+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+200+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+400+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+600+300,height/2-90-i*200-80]) for i in range (4)])
+    keys.extend([create_flickering_square(pos=[-width/2+800+300,height/2-90-i*200-80]) for i in range (4)])
     # keys.extend([create_flickering_square(pos=[-width/2+450+i*250,height/2-90-250-200]) for i in range (3)])
     return keys
 
@@ -225,9 +265,10 @@ if use_dsi_lsl:
         pull_thread.start()
         return inlets, pull_thread
     
-    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM8','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4
+    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM10','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4
     with open("eeg.csv", 'w') as csv_file:
-        csv_file.write('time, Pz, F4, C4, P4, P3, C3, F3, TRG\n')
+        # csv_file.write('time, Pz, F4, C4, P4, P3, C3, F3, TRG\n')
+        csv_file.write('time, P3, C3, F3, Fz, F4, C4, P4, Cz, Pz, Fp1, Fp2, T3, T5, O1, O2, X3, X2, F7, F8, X1, A2, T6, T4, TRG\n')
     with open("meta.csv", 'w') as csv_file:
         csv_file.write('')
     time.sleep(15)
@@ -653,6 +694,9 @@ if __name__ == "__main__":
     if keyboard_flash: # if we want the visual stimuli to be presented in the keyboard layout
         # flickering_keyboard = create_keyboard()
         flickering_keyboard = create_9_keys()
+        # flickering_keyboard = create_16_keys(color='black')
+        # flickering_keyboard2 = create_16_keys()
+        # flickering_keyboard3 = create_16_keys(color='red')
         stim_duration_frames = ms_to_frame((stim_duration)*1000, refresh_rate) # total number of frames for the stimulation
         frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
         flickering_frames = np.zeros((len(frame_indices), n_keyboard_classes))
@@ -697,12 +741,20 @@ if __name__ == "__main__":
             while(not flash_successful):
                 iter_frame = iter(enumerate(flickering_frames))
                 for i_frame,frame in iter_frame:
+                    print(frame)
                     key_counter = 0
                     next_flip = win.getFutureFlipTime()
                     # while next_flip == last_flip:
                     #     next_flip = win.getFutureFlipTime()
+                    # if i_frame % 2 == 0:
+                    #     current_keyboard = flickering_keyboard
+                    # else:
+                    #     current_keyboard = flickering_keyboard2
+                    # current_keyboard = flickering_keyboard
                     iter_keyboard = iter(enumerate(zip(flickering_keyboard,frame)))
+                    # iter_keyboard = iter(enumerate(zip(current_keyboard,frame)))
                     for i_key,(key, key_frame) in iter_keyboard:
+                    # for key in current_keyboard:
                         # if i_key == class_num:
                         #     key.color = (key_frame,key_frame,key_frame)
                         #     key.draw()
@@ -727,6 +779,7 @@ if __name__ == "__main__":
                             dsi_serial.write(msg)
                         for failure_frame in range(15):
                             for i_key,key in enumerate(flickering_keyboard):
+                            # for key in flickering_keyboard3:
                                 if i_key == class_num:
                                     key.color = (1,-1,-1)
                                 else:
