@@ -54,20 +54,20 @@ n_per_class=10
 #          (10,0),(10,0.5),(10,1),(10,1.5),
 #          (13,0),(13,0.5),(13,1),(13,1.5),]
 
-# keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
-#         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
-#          (10,0),(10,0.5),(10,1),(10,1.5),
-#          (11,0),(11,0.5),(11,1),(11,1.5),
-#          (13,0),(13,0.5),(13,1),(13,1.5),]
+keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
+        ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
+         (10,0),(10,0.5),(10,1),(10,1.5),
+         (11,0),(11,0.5),(11,1),(11,1.5),
+         (13,0),(13,0.5),(13,1),(13,1.5),]
 
 # keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
 #         ( 9,0),( 9,0.5),( 9,1),( 9,1.5),
 #          (10,0),(10,0.5),(10,1),(10,1.5),
 #          (11,0),(11,0.5),(11,1),(11,1.5),]
 
-keyboard_classes=[( 8,0),( 8,0.5),( 8,1),
-         (10,0),(10,0.5),(10,1),
-         (15,0),(15,0.5),(15,1),]
+# keyboard_classes=[( 8,0),( 8,0.5),( 8,1),
+#          (10,0),(10,0.5),(10,1),
+#          (15,0),(15,0.5),(15,1),]
 n_keyboard_classes = len(keyboard_classes)
 # classes=[(8,0),(9,1.75),(10,1.5),(11,1.25),(12,1),(13,0.75),(14,0.5),(15,0.25),
 #         (8.2,0.35),(9.2,0.1),(10.2,1.85),(11.2,1.6),(12.2,1.35),(13.2,1.1),(14.2,0.85),(15.2,0.6),
@@ -681,7 +681,7 @@ if __name__ == "__main__":
                     win.flip()
     if keyboard_flash: # if we want the visual stimuli to be presented in the keyboard layout
         # flickering_keyboard = create_keyboard()
-        flickering_keyboard = create_9_keys()
+        flickering_keyboard = create_20_keys()
         orig_keyboard_position = np.copy(flickering_keyboard.xys)
         stim_duration_frames = ms_to_frame((stim_duration)*1000, refresh_rate) # total number of frames for the stimulation
         frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
