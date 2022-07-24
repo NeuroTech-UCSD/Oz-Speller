@@ -27,10 +27,11 @@ use_photosensor = False
 record_start_time = True
 center_flash = False # whether the visual stimuli are only presented at the center of the screen
 test_mode = True # whether the script indicates target squares and saves recorded data
-make_predictions = True # whether the script makes predictions using a pretrained model
+make_predictions = False # whether the script makes predictions using a pretrained model
 model = None
 if make_predictions:
-    with open("reports/trained_models/wsx32/fbtdca_1s.pkl", 'rb') as filehandler:
+    # with open("reports/trained_models/wsx32/fbtdca_1s.pkl", 'rb') as filehandler:
+    with open("reports/trained_models/s32/fbtdca_1s.pkl", 'rb') as filehandler:
         model = pickle.load(filehandler)
 random_positions = False
 random_movements = False
@@ -293,15 +294,15 @@ if use_dsi_lsl:
         pull_thread.start()
         return inlets, pull_thread
     
-    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM12','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4
+    p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM8','--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4 or 8 for dsi-7 or COM12 for dsi-24
     with open("eeg.csv", 'w') as csv_file:
-        # csv_file.write('time, Pz, F4, C4, P4, P3, C3, F3, TRG\n') # For DSI-7
-        csv_file.write('time, P3, C3, F3, Fz, F4, C4, P4, Cz, Pz, Fp1, Fp2, T3, T5, O1, O2, X3, X2, F7, F8, X1, A2, T6, T4, TRG\n') # For DSI-24
+        csv_file.write('time, Pz, F4, C4, P4, P3, C3, F3, TRG\n') # For DSI-7
+        # csv_file.write('time, P3, C3, F3, Fz, F4, C4, P4, Cz, Pz, Fp1, Fp2, T3, T5, O1, O2, X3, X2, F7, F8, X1, A2, T6, T4, TRG\n') # For DSI-24
     with open("meta.csv", 'w') as csv_file:
         csv_file.write('')
     time.sleep(15)
     if use_dsi_trigger:
-        dsi_serial = serial.Serial('COM13',115200)
+        dsi_serial = serial.Serial('COM2',115200) # 2 for serial trigger or 13 for trigger hub
     eeg = []    # receive_data() saves [timepoints by channels] here
     print(resolve_streams())
     inlets, _ = get_lsl_data(eeg)
@@ -768,8 +769,8 @@ if __name__ == "__main__":
                     flickering_keyboard.draw()
                     if core.getTime() > next_flip:
                         if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
-                            # msg = b'\x01\xe1\x01\x00\x02'
-                            msg = b'\x02'
+                            msg = b'\x01\xe1\x01\x00\x02'
+                            # msg = b'\x02' # if use trigger hub
                             dsi_serial.write(msg)
                         n_frameskip+=1
                         print(str(n_frameskip)+'/'+str(i_trial+1))
@@ -784,8 +785,8 @@ if __name__ == "__main__":
 
                     if i_frame == 0:
                         if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
-                            # msg = b'\x01\xe1\x01\x00\x01'
-                            msg = b'\x01'
+                            msg = b'\x01\xe1\x01\x00\x01'
+                            # msg = b'\x01' # if use trigger hub
                             dsi_serial.write(msg)
                         frame_start_time = local_clock()
                     if i_frame == stim_duration_frames - 1:
@@ -797,11 +798,11 @@ if __name__ == "__main__":
             prediction = [-1]
             if use_dsi_lsl and make_predictions:
                 trial_eeg = np.copy(eeg[-700:])
-                if(len(np.where(trial_eeg[:,-1]==18.0)[0])==0): # 2.0 or 18.0
+                if(len(np.where(trial_eeg[:,-1]==2.0)[0])==0): # 2.0 or 18.0
                     # print(trial_eeg[np.where(trial_eeg[:,-1]==16.0)[0][0]+40:,1:-1].T.shape)
-                    # prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==16.0)[0][0]+40:,1:-1].T)
-                    dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
-                    prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==16)[0][0]+40:,dsi24chans].T)
+                    prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==1.0)[0][0]+40:,1:-1].T) # 1 or 16
+                    # dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
+                    # prediction = model.predict(trial_eeg[np.where(trial_eeg[:,-1]==16)[0][0]+40:,dsi24chans].T)
                     predited_class_num = keyboard_classes.index(classes[prediction[0]])
                     key_colors[predited_class_num] = [-1,1,-1]
                     if prediction == class_num:
