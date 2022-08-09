@@ -20,7 +20,7 @@ sys.path.append('src') # if run from the root project directory
 ## VARIABLES
 use_dsi7 = False
 use_dsi_trigger = True
-use_dsi_lsl = True
+use_dsi_lsl = False
 use_arduino = False # arduino photosensor for flashing timing test
 use_cyton = False
 use_photosensor = False
@@ -31,8 +31,10 @@ make_predictions = False # whether the script makes predictions using a pretrain
 model = None
 if make_predictions:
     # with open("reports/trained_models/wsx32/fbtdca_1s.pkl", 'rb') as filehandler:
-    with open("reports/trained_models/s32/fbtdca_1s.pkl", 'rb') as filehandler:
+    with open("reports/trained_models/32-class_speller/DSI-7/Simon/fbtdca_1s6t.pkl", 'rb') as filehandler:
         model = pickle.load(filehandler)
+shuffled_positions = False
+shuffled_initial_positions = True
 random_positions = False
 random_movements = False
 random_linear_movements = False
@@ -687,6 +689,16 @@ if __name__ == "__main__":
     frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
     flickering_frames = np.zeros((len(frame_indices), n_keyboard_classes))
     linear_movement_vector = (np.random.random(size = [n_keyboard_classes,2]) * 2 - 1) * 0.2
+    if shuffled_initial_positions:
+        np.random.seed(1)
+        r_pos = np.copy(orig_keyboard_position)
+        # print(np.where(r_pos[:, None] == orig_keyboard_position[None, :])[1])
+        # print([ np.where(np.logical_and((orig_keyboard_position==x)[:,1], (orig_keyboard_position==x)[:,0])==True)[0][0] for x in r_pos])
+        np.random.shuffle(r_pos[:-1]) # Multi-dimensional arrays are only shuffled along the first axis
+        # print(orig_keyboard_position)
+        # print([ np.where(np.logical_and((orig_keyboard_position==x)[:,1], (orig_keyboard_position==x)[:,0])==True)[0][0] for x in r_pos])
+        # print(r_pos)
+        flickering_keyboard.xys = r_pos
     for i_class,(flickering_freq,phase_offset) in enumerate(keyboard_classes):
         phase_offset += .00001 # nudge phase slightly from points of sudden jumps for offsets that are pi multiples
         flickering_frames[:,i_class] = signal.square(2 * np.pi * flickering_freq * (frame_indices / refresh_rate) + phase_offset * np.pi) # frequency approximation formula
@@ -727,6 +739,10 @@ if __name__ == "__main__":
             key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
             key_colors[class_num] = [1,1,1]
             flickering_keyboard.colors = key_colors
+            if shuffled_positions:
+                r_pos = np.copy(orig_keyboard_position)
+                np.random.shuffle(r_pos[:-1]) # Multi-dimensional arrays are only shuffled along the first axis
+                flickering_keyboard.xys = r_pos
             if random_positions:
                 # r_pos = np.random.random(size = [n_keyboard_classes,2]) * 2 - 1
                 # r_pos[:,0] *= width/2.5
@@ -734,7 +750,7 @@ if __name__ == "__main__":
                 # flickering_keyboard.xys = r_pos
                 r_pos = np.copy(orig_keyboard_position)
                 np.random.shuffle(r_pos) # Multi-dimensional arrays are only shuffled along the first axis
-                random_pos_offset = (np.random.random(size = [n_keyboard_classes,2]) * 2 - 1)
+                random_pos_offset = (np.random.random(size = [n_keyboard_classes+1,2]) * 2 - 1)
                 random_pos_offset[:,0] *= width/25
                 random_pos_offset[:,1] *= height/25
                 r_pos += random_pos_offset
