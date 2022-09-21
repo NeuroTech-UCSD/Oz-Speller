@@ -1,0 +1,4 @@
+PsychoPy  2022.1.2
+pygame                       2.1.2
+pyglet                       1.5.23
+Python 3.9.6

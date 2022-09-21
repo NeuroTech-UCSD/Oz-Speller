@@ -214,6 +214,29 @@ def create_32_keys(size=120, colors = [-1,-1,-1]*33):
     keys = visual.ElementArrayStim(win, nElements = 33, elementTex = None, elementMask = None, units = 'pix', sizes = [size,size], xys = positions, colors = colors)
     return keys
 
+def create_key_caps(text_strip,el_mask,phases,colors = [-1,-1,-1]*26):
+    positions = []
+    positions.extend([[-width/2+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[-width/2+190*1+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[-width/2+190*2+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[-width/2+190*3+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[-width/2+190*4+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[-width/2+190*5+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[-width/2+190*6+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[-width/2+190*7+100,height/2-90-i*200-80] for i in range (4)])
+    positions.extend([[width/2-40,height/2-40]])
+    els = visual.ElementArrayStim(
+        win=win,
+        units="pix",
+        nElements=33,
+        sizes=text_strip.shape,
+        xys=positions,
+        phases=phases,
+        colors=colors,
+        elementTex=text_strip,
+        elementMask=el_mask)
+    return els
+
 # █████████████████████████████████████████████████████████████████████████████
 
 if use_dsi_lsl:
@@ -586,6 +609,84 @@ if use_cyton:
 
 # █████████████████████████████████████████████████████████████████████████████
 
+## Keyboard
+
+import string
+import numpy as np
+import psychopy.visual
+import psychopy.event
+from psychopy import core
+
+letters = string.ascii_letters[:26]
+letters += '⌂'
+letters += '⎵'
+letters += ','
+letters += '.'
+letters += '↨'
+letters += '⌫'
+letters += ' '
+win = psychopy.visual.Window(
+    size=(800, 800),
+    units="pix",
+    fullscr=False)
+n_text = 33
+text_cap_size = 119#34
+text_strip_height = n_text * text_cap_size
+text_strip = np.full((text_strip_height, text_cap_size), np.nan)
+text = psychopy.visual.TextStim(win=win, height=60, font="Courier")
+cap_rect_norm = [-(text_cap_size / 2.0) / (win.size[0] / 2.0),  # left
+    +(text_cap_size / 2.0) / (win.size[1] / 2.0),  # top
+    +(text_cap_size / 2.0) / (win.size[0] / 2.0),  # right
+    -(text_cap_size / 2.0) / (win.size[1] / 2.0)]   # bottom
+
+# capture the rendering of each letter
+for (i_letter, letter) in enumerate(letters):
+    text.text = letter.upper()
+    buff = psychopy.visual.BufferImageStim(
+        win=win,
+        stim=[text],
+        rect=cap_rect_norm)
+    i_rows = slice(i_letter * text_cap_size,
+        i_letter * text_cap_size + text_cap_size)
+    text_strip[i_rows, :] = (np.flipud(np.array(buff.image)[..., 0]) / 255.0 * 2.0 - 1.0)
+
+# need to pad 'text_strip' to pow2 to use as a texture
+new_size = max([int(np.power(2, np.ceil(np.log(dim_size) / np.log(2))))
+        for dim_size in text_strip.shape])
+pad_amounts = []
+for i_dim in range(2):
+    first_offset = int((new_size - text_strip.shape[i_dim]) / 2.0)
+    second_offset = new_size - text_strip.shape[i_dim] - first_offset
+    pad_amounts.append([first_offset, second_offset])
+text_strip = np.pad(
+    array=text_strip,
+    pad_width=pad_amounts,
+    mode="constant",
+    constant_values=0.0)
+text_strip = (text_strip - 1) * -1 # invert the texture mapping
+
+# make a central mask to show just one letter
+el_mask = np.ones(text_strip.shape) * -1.0
+# start by putting the visible section in the corner
+el_mask[:text_cap_size, :text_cap_size] = 1.0
+
+# then roll to the middle
+el_mask = np.roll(el_mask,
+    (int(new_size / 2 - text_cap_size / 2), ) * 2,
+    axis=(0, 1))
+
+# work out the phase offsets for the different letters
+base_phase = ((text_cap_size * (n_text / 2.0)) - (text_cap_size / 2.0)) / new_size
+
+phase_inc = (text_cap_size) / float(new_size)
+
+phases = np.array([
+        (0.0, base_phase - i_letter * phase_inc)
+        for i_letter in range(n_text)])
+win.close()
+
+# █████████████████████████████████████████████████████████████████████████████
+
 ## EXPERIMENT
 
 # if this script is run as a script rather than imported
@@ -687,6 +788,7 @@ if __name__ == "__main__":
                     win.flip()
     
     flickering_keyboard = create_32_keys()
+    flickering_keyboard_caps = create_key_caps(text_strip,el_mask,phases)
     orig_keyboard_position = np.copy(flickering_keyboard.xys)
     stim_duration_frames = ms_to_frame((stim_duration)*1000, refresh_rate) # total number of frames for the stimulation
     frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
@@ -742,6 +844,7 @@ if __name__ == "__main__":
             key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
             key_colors[class_num] = [1,1,1]
             flickering_keyboard.colors = key_colors
+            flickering_keyboard_caps.colors = key_colors
             if shuffled_positions:
                 r_pos = np.copy(orig_keyboard_position)
                 np.random.shuffle(r_pos[:-1]) # Multi-dimensional arrays are only shuffled along the first axis
@@ -759,7 +862,7 @@ if __name__ == "__main__":
                 r_pos += random_pos_offset
                 flickering_keyboard.xys = r_pos
             
-            for frame in range(ms_to_frame(isi_duration*1000, refresh_rate)):
+            for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
                 trial_text.draw()
                 acc_text.draw()
                 # if random_movements:
@@ -767,6 +870,18 @@ if __name__ == "__main__":
                 #     flickering_keyboard.xys += movement_vector
                 # if random_linear_movements:
                 #     flickering_keyboard.xys += linear_movement_vector
+                # flickering_keyboard.draw()
+                flickering_keyboard_caps.draw()
+                win.flip()
+            for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
+                trial_text.draw()
+                acc_text.draw()
+                # if random_movements:
+                #     movement_vector = (np.random.random(size = [n_keyboard_classes,2]) * 2 - 1) * 1
+                #     flickering_keyboard.xys += movement_vector
+                # if random_linear_movements:
+                #     flickering_keyboard.xys += linear_movement_vector
+                # flickering_keyboard.draw()
                 flickering_keyboard.draw()
                 win.flip()
             flash_successful = False
@@ -813,7 +928,8 @@ if __name__ == "__main__":
                         with open("meta.csv", 'a') as csv_file:
                             csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(frame_start_time) + '\n')
             key_colors = np.array([[1,1,1]]*(n_keyboard_classes+1))
-            flickering_keyboard.colors = key_colors
+            # flickering_keyboard.colors = key_colors
+            flickering_keyboard_caps.colors = key_colors
             prediction = [-1]
             if use_dsi_lsl and make_predictions:
                 trial_eeg = np.copy(eeg[-700:])
@@ -826,10 +942,11 @@ if __name__ == "__main__":
                     key_colors[predited_class_num] = [-1,1,-1]
                     if prediction == class_num:
                         n_correct+=1
-            for frame in range(ms_to_frame(isi_duration*1000, refresh_rate)):
+            for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
                 trial_text.draw()
                 acc_text.draw()
-                flickering_keyboard.draw()
+                # flickering_keyboard.draw()
+                flickering_keyboard_caps.draw()
                 win.flip()
         time.sleep(5)
     else:
