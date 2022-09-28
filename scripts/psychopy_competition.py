@@ -1165,6 +1165,9 @@ if __name__ == "__main__":
         pred_text = ''
         first_trial = True
         clear_text_double_check = False
+        short_timeout = False
+        mid_timeout = False
+        long_timeout = False
         screen = 'keyboard'
         caps2 = False
         while True:
@@ -1315,7 +1318,7 @@ if __name__ == "__main__":
                 key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
                 key_colors[:-1] = [1,1,1]
                 flickering_keyboard.colors = key_colors
-                for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
+                for frame in range(ms_to_frame(isi_duration/4*1000, refresh_rate)):
                     flickering_keyboard.draw()
                     win.flip()
                 flash_successful = False
@@ -1394,11 +1397,66 @@ if __name__ == "__main__":
                                 clear_text_double_check = False
                             else:
                                 clear_text_double_check = True
+                        elif pred_letter == '⏳':
+                            short_timeout = True
+                        elif pred_letter == '⌚':
+                            mid_timeout = True
+                        elif pred_letter == '⏰':
+                            long_timeout = True
+                        elif pred_letter == '⏩':
+                            if isi_duration>1:
+                                isi_duration-=0.2
+                        elif pred_letter == '⏪':
+                            if isi_duration<2:
+                                isi_duration+=0.2
 
-                for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
+                speed = int(11 - isi_duration/0.2)
+                speed_text = visual.TextStim(win, 'speed: ' + str(speed), color=(-1, -1, -1), colorSpace='rgb', units='pix', pos=[0,height/2-50],wrapWidth=1500, alignText='left')
+                speed_text.size = 50
+                for frame in range(ms_to_frame(isi_duration/1.5*1000, refresh_rate)):
+                    speed_text.draw()
                     flickering_keyboard_caps3.draw()
                     input_text.draw()
                     win.flip()
+
+                if short_timeout or mid_timeout or long_timeout:
+                    if short_timeout:
+                        timeout_time = 15
+                    elif mid_timeout:
+                        timeout_time = 30
+                    elif long_timeout:
+                        timeout_time = 60
+                    timer = core.CountdownTimer(timeout_time)
+                    timeout_text = visual.TextStim(win, '', color=(-1, -1, -1), colorSpace='rgb', units='pix', pos=[0,height/2-50],wrapWidth=1500, alignText='left')
+                    timeout_text.size = 50
+                    time_left = timer.getTime()
+                    while time_left > 0:
+                        keys = kb.getKeys()
+                        for thisKey in keys:
+                            if thisKey=='escape':
+                                if use_dsi_lsl:
+                                    for inlet in inlets:
+                                        inlet.close_stream()
+                                    os.kill(p.pid, sig.CTRL_C_EVENT)
+                                    with open("eeg.csv", 'a') as csv_file:
+                                        np.savetxt(csv_file, eeg, delimiter=', ')
+                                if use_cyton:
+                                    for inlet in inlets:
+                                        inlet.close_stream()
+                                    stop_cyton.set()
+                                    board.stop_stream()
+                                    with open("eeg.csv", 'a') as csv_file:
+                                        np.savetxt(csv_file, eeg, delimiter=', ')
+                                core.quit()
+                        time_left = timer.getTime()
+                        timeout_text.text = 'Timeout: '+str(round(time_left, 3))
+                        timeout_text.draw()
+                        flickering_keyboard_caps3.draw()
+                        input_text.draw()
+                        win.flip()
+                    short_timeout = False
+                    mid_timeout = False
+                    long_timeout = False
             
     
     if use_dsi_lsl:
