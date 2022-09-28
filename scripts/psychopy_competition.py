@@ -1059,8 +1059,9 @@ if __name__ == "__main__":
         n_frameskip=0
         i_trial = 0
         while True:
-            input_text = visual.TextStim(win, 'adkjfb alsd bfkjsvbjkas dbfijdasb jkdbsfliaeh', color=(-1, -1, -1), colorSpace='rgb', units='pix',wrapWidth=50, pos=[-500,0])
-            input_text.size = 50
+            input_text = visual.TextStim(win, 'adkjfb alsd bfkjsvbjkas dbfijdasb jkdbsfliaeh,askdkfnzkdfna \n alsdkncnas andlkanflk adlfkma asdflskf', 
+                                    color=(-1, -1, -1), colorSpace='rgb', units='pix',wrapWidth=850, pos=[-300,0], alignText='left')
+            input_text.size = 40
             i_trial+=1
             keys = kb.getKeys()
             for thisKey in keys:
@@ -1163,11 +1164,17 @@ if __name__ == "__main__":
     else:
         pred_text = ''
         first_trial = True
+        clear_text_double_check = False
         screen = 'keyboard'
         caps2 = False
         while True:
             if screen == 'keyboard':
-                top_text = visual.TextStim(win, pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix', pos=[0,height/2-50],wrapWidth=1500, alignText='left')
+                short_pred_text = pred_text
+                if '\n' in short_pred_text:
+                    short_pred_text = short_pred_text[short_pred_text.rfind('\n')+1:]
+                if len(short_pred_text) > 40:
+                    short_pred_text = short_pred_text[-40:]
+                top_text = visual.TextStim(win, short_pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix', pos=[0,height/2-50],wrapWidth=1500, alignText='left')
                 top_text.size = 50
                 keys = kb.getKeys()
                 for thisKey in keys:
@@ -1255,6 +1262,8 @@ if __name__ == "__main__":
                             pred_text = pred_text[:-1]
                         elif pred_letter == '⎵':
                             pred_text += ' '
+                        elif pred_letter == '⮐':
+                            pred_text += '\n'
                         elif pred_letter == '⤒':
                             caps2 = True
                         elif pred_letter == '⤓':
@@ -1275,8 +1284,8 @@ if __name__ == "__main__":
                     top_text.draw()
                     win.flip()
             elif screen == 'homescreen':
-                input_text = visual.TextStim(win, 'adkjfb alsd bfkjsvbjkas dbfijdasb jkdbsfliaeh', color=(-1, -1, -1), colorSpace='rgb', units='pix',wrapWidth=50, pos=[-500,0])
-                input_text.size = 50
+                input_text = visual.TextStim(win, pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',wrapWidth=850, pos=[-300,0], alignText='left')
+                input_text.size = 40
                 keys = kb.getKeys()
                 for thisKey in keys:
                     if thisKey=='escape':
@@ -1370,8 +1379,25 @@ if __name__ == "__main__":
                         predited_class_num = keyboard_classes.index(classes[prediction[0]])
                         # print(prediction[0])
                         key_colors[predited_class_num] = [-1,1,-1]
+                        pred_letter = letters3[predited_class_num]
+                        # letters3 = '12341234123412341234⏳⌚⏰ ⎚⏩ ⌨✉⏪ ⌫ '
+                        if pred_letter != '⎚':
+                            clear_text_double_check = False
+                        if pred_letter == '⌨':
+                            screen = 'keyboard'
+                            first_trial = True
+                        elif pred_letter == '⌫':
+                            pred_text = pred_text[:-1]
+                        elif pred_letter == '⎚':
+                            if clear_text_double_check:
+                                pred_text = ''
+                                clear_text_double_check = False
+                            else:
+                                clear_text_double_check = True
+
                 for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
                     flickering_keyboard_caps3.draw()
+                    input_text.draw()
                     win.flip()
             
     
