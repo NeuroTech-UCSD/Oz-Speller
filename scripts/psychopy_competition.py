@@ -26,7 +26,7 @@ use_cyton = False
 use_photosensor = False
 record_start_time = True
 center_flash = False # whether the visual stimuli are only presented at the center of the screen
-test_mode = True # whether the script indicates target squares and saves recorded data
+test_mode = False # whether the script indicates target squares and saves recorded data
 home_screen = False
 make_predictions = True # whether the script makes predictions using a pretrained model
 model = None
@@ -611,80 +611,149 @@ if use_cyton:
 # █████████████████████████████████████████████████████████████████████████████
 
 ## Keyboard
+if True:
+    import string
+    import numpy as np
+    import psychopy.visual
+    import psychopy.event
+    from psychopy import core
 
-import string
-import numpy as np
-import psychopy.visual
-import psychopy.event
-from psychopy import core
+    # letters = string.ascii_letters[:26]
+    # letters += '⌂'
+    # letters += '⎵'
+    # letters += ','
+    # letters += '.'
+    # letters += '↨'
+    # letters += '⌫'
+    # letters += ' '
+    # letters = 'AIQYBJRZCKS⌂DLT⎵EMU,FNV.GOW↨HPX⌫ '
+    # letters = 'AIQYBJRZCKS⌂DLT⎵EMU,FNV.GOW⤒HPX⌫ '
+    letters = 'AIQYBJRZCKS⌂D⌫T⎵EMU,FNV.GOW⤒HPXL '
+    # letters2 = '19/+2(~-3)$⌂4:%=5;&<6"*>7!#↨8?⮐⌫ '
+    # letters2 = '19/+2(~-3)$⌂4:%=5;&<6"*>7!#⤓8?⮐⌫ '
+    # letters2 = '19/+2(~-3)$\'4⌫%=5;&<6"*>7!#⤓8?⮐: '
+    letters2 = '19/+2(~-3)$;4⌫%=5\'&<6"*>7!#⤓8?⮐: '
+    letters3 = '12341234123412341234⏳⌚⏰ ⎚⏩ ⌨✉⏪ ⌫ '
+    # letters3 = '12341234123412341234⑮⌚⏰ ⎚⏩ ⌨✉⏪ ⌫ '
+    win = psychopy.visual.Window(
+        size=(800, 800),
+        units="pix",
+        fullscr=False)
+    n_text = 33
+    text_cap_size = 119#34
+    text_strip_height = n_text * text_cap_size
+    text_strip = np.full((text_strip_height, text_cap_size), np.nan)
+    text_strip2 = np.full((text_strip_height, text_cap_size), np.nan)
+    text_strip3 = np.full((text_strip_height, text_cap_size), np.nan)
+    text = psychopy.visual.TextStim(win=win, height=60, font="Courier")
+    text2 = psychopy.visual.TextStim(win=win, height=60, font="Courier")
+    text3 = psychopy.visual.TextStim(win=win, height=60, font="Courier")
+    cap_rect_norm = [-(text_cap_size / 2.0) / (win.size[0] / 2.0),  # left
+        +(text_cap_size / 2.0) / (win.size[1] / 2.0),  # top
+        +(text_cap_size / 2.0) / (win.size[0] / 2.0),  # right
+        -(text_cap_size / 2.0) / (win.size[1] / 2.0)]   # bottom
 
-letters = string.ascii_letters[:26]
-letters += '⌂'
-letters += '⎵'
-letters += ','
-letters += '.'
-letters += '↨'
-letters += '⌫'
-letters += ' '
-win = psychopy.visual.Window(
-    size=(800, 800),
-    units="pix",
-    fullscr=False)
-n_text = 33
-text_cap_size = 119#34
-text_strip_height = n_text * text_cap_size
-text_strip = np.full((text_strip_height, text_cap_size), np.nan)
-text = psychopy.visual.TextStim(win=win, height=60, font="Courier")
-cap_rect_norm = [-(text_cap_size / 2.0) / (win.size[0] / 2.0),  # left
-    +(text_cap_size / 2.0) / (win.size[1] / 2.0),  # top
-    +(text_cap_size / 2.0) / (win.size[0] / 2.0),  # right
-    -(text_cap_size / 2.0) / (win.size[1] / 2.0)]   # bottom
+    # capture the rendering of each letter
+    for (i_letter, letter) in enumerate(letters):
+        text.text = letter.upper()
+        buff = psychopy.visual.BufferImageStim(
+            win=win,
+            stim=[text],
+            rect=cap_rect_norm)
+        i_rows = slice(i_letter * text_cap_size,
+            i_letter * text_cap_size + text_cap_size)
+        text_strip[i_rows, :] = (np.flipud(np.array(buff.image)[..., 0]) / 255.0 * 2.0 - 1.0)
 
-# capture the rendering of each letter
-for (i_letter, letter) in enumerate(letters):
-    text.text = letter.upper()
-    buff = psychopy.visual.BufferImageStim(
-        win=win,
-        stim=[text],
-        rect=cap_rect_norm)
-    i_rows = slice(i_letter * text_cap_size,
-        i_letter * text_cap_size + text_cap_size)
-    text_strip[i_rows, :] = (np.flipud(np.array(buff.image)[..., 0]) / 255.0 * 2.0 - 1.0)
+    # capture the rendering of each letter
+    for (i_letter, letter) in enumerate(letters2):
+        text2.text = letter.upper()
+        buff = psychopy.visual.BufferImageStim(
+            win=win,
+            stim=[text2],
+            rect=cap_rect_norm)
+        i_rows = slice(i_letter * text_cap_size,
+            i_letter * text_cap_size + text_cap_size)
+        text_strip2[i_rows, :] = (np.flipud(np.array(buff.image)[..., 0]) / 255.0 * 2.0 - 1.0)
 
-# need to pad 'text_strip' to pow2 to use as a texture
-new_size = max([int(np.power(2, np.ceil(np.log(dim_size) / np.log(2))))
-        for dim_size in text_strip.shape])
-pad_amounts = []
-for i_dim in range(2):
-    first_offset = int((new_size - text_strip.shape[i_dim]) / 2.0)
-    second_offset = new_size - text_strip.shape[i_dim] - first_offset
-    pad_amounts.append([first_offset, second_offset])
-text_strip = np.pad(
-    array=text_strip,
-    pad_width=pad_amounts,
-    mode="constant",
-    constant_values=0.0)
-text_strip = (text_strip - 1) * -1 # invert the texture mapping
+    # capture the rendering of each letter
+    for (i_letter, letter) in enumerate(letters3):
+        text3.text = letter.upper()
+        buff = psychopy.visual.BufferImageStim(
+            win=win,
+            stim=[text3],
+            rect=cap_rect_norm)
+        i_rows = slice(i_letter * text_cap_size,
+            i_letter * text_cap_size + text_cap_size)
+        text_strip3[i_rows, :] = (np.flipud(np.array(buff.image)[..., 0]) / 255.0 * 2.0 - 1.0)
 
-# make a central mask to show just one letter
-el_mask = np.ones(text_strip.shape) * -1.0
-# start by putting the visible section in the corner
-el_mask[:text_cap_size, :text_cap_size] = 1.0
+    # need to pad 'text_strip' to pow2 to use as a texture
+    new_size = max([int(np.power(2, np.ceil(np.log(dim_size) / np.log(2))))
+            for dim_size in text_strip.shape])
+    pad_amounts = []
+    for i_dim in range(2):
+        first_offset = int((new_size - text_strip.shape[i_dim]) / 2.0)
+        second_offset = new_size - text_strip.shape[i_dim] - first_offset
+        pad_amounts.append([first_offset, second_offset])
+    text_strip = np.pad(
+        array=text_strip,
+        pad_width=pad_amounts,
+        mode="constant",
+        constant_values=0.0)
+    text_strip = (text_strip - 1) * -1 # invert the texture mapping
 
-# then roll to the middle
-el_mask = np.roll(el_mask,
-    (int(new_size / 2 - text_cap_size / 2), ) * 2,
-    axis=(0, 1))
+    text_strip2 = np.pad(
+        array=text_strip2,
+        pad_width=pad_amounts,
+        mode="constant",
+        constant_values=0.0)
+    text_strip2 = (text_strip2 - 1) * -1 # invert the texture mapping
 
-# work out the phase offsets for the different letters
-base_phase = ((text_cap_size * (n_text / 2.0)) - (text_cap_size / 2.0)) / new_size
+    text_strip3 = np.pad(
+        array=text_strip3,
+        pad_width=pad_amounts,
+        mode="constant",
+        constant_values=0.0)
+    text_strip3 = (text_strip3 - 1) * -1 # invert the texture mapping
 
-phase_inc = (text_cap_size) / float(new_size)
+    # make a central mask to show just one letter
+    el_mask = np.ones(text_strip.shape) * -1.0
+    # start by putting the visible section in the corner
+    el_mask[:text_cap_size, :text_cap_size] = 1.0
 
-phases = np.array([
-        (0.0, base_phase - i_letter * phase_inc)
-        for i_letter in range(n_text)])
-win.close()
+    # then roll to the middle
+    el_mask = np.roll(el_mask,
+        (int(new_size / 2 - text_cap_size / 2), ) * 2,
+        axis=(0, 1))
+
+    # make a central mask to show just one letter
+    el_mask2 = np.ones(text_strip2.shape) * -1.0
+    # start by putting the visible section in the corner
+    el_mask2[:text_cap_size, :text_cap_size] = 1.0
+
+    # then roll to the middle
+    el_mask2 = np.roll(el_mask2,
+        (int(new_size / 2 - text_cap_size / 2), ) * 2,
+        axis=(0, 1))
+
+    # make a central mask to show just one letter
+    el_mask3 = np.ones(text_strip3.shape) * -1.0
+    # start by putting the visible section in the corner
+    el_mask3[:text_cap_size, :text_cap_size] = 1.0
+
+    # then roll to the middle
+    el_mask3 = np.roll(el_mask3,
+        (int(new_size / 2 - text_cap_size / 2), ) * 2,
+        axis=(0, 1))
+
+    # work out the phase offsets for the different letters
+    base_phase = ((text_cap_size * (n_text / 2.0)) - (text_cap_size / 2.0)) / new_size
+
+    phase_inc = (text_cap_size) / float(new_size)
+
+    phases = np.array([
+            (0.0, base_phase - i_letter * phase_inc)
+            for i_letter in range(n_text)])
+    win.close()
 
 # █████████████████████████████████████████████████████████████████████████████
 
@@ -790,6 +859,8 @@ if __name__ == "__main__":
     
     flickering_keyboard = create_32_keys()
     flickering_keyboard_caps = create_key_caps(text_strip,el_mask,phases)
+    flickering_keyboard_caps2 = create_key_caps(text_strip2,el_mask2,phases)
+    flickering_keyboard_caps3 = create_key_caps(text_strip3,el_mask3,phases)
     orig_keyboard_position = np.copy(flickering_keyboard.xys)
     stim_duration_frames = ms_to_frame((stim_duration)*1000, refresh_rate) # total number of frames for the stimulation
     frame_indices = np.arange(stim_duration_frames) # the frames as integer indices
@@ -1090,82 +1161,218 @@ if __name__ == "__main__":
                 flickering_keyboard_caps.draw()
                 win.flip()
     else:
+        pred_text = ''
+        first_trial = True
+        screen = 'keyboard'
+        caps2 = False
         while True:
-            keys = kb.getKeys()
-            for thisKey in keys:
-                if thisKey=='escape':
-                    if use_dsi_lsl:
-                        for inlet in inlets:
-                            inlet.close_stream()
-                        os.kill(p.pid, sig.CTRL_C_EVENT)
-                    core.quit()
-            iter_frame = iter(enumerate(flickering_frames))
-            key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
-            key_colors[:-1] = [1,1,1]
-            flickering_keyboard.colors = key_colors
-            # for frame in range(ms_to_frame(isi_duration/2*1000, refresh_rate)):
-            #     flickering_keyboard_caps.draw()
-            #     win.flip()
-            for frame in range(ms_to_frame(isi_duration/2*1000, refresh_rate)):
-                flickering_keyboard.draw()
-                win.flip()
-            for i_frame,frame in iter_frame:
-                next_flip = win.getFutureFlipTime()
-                if random_movements:
-                    movement_vector = (np.random.random(size = [n_keyboard_classes,2]) * 2 - 1) * 1
-                    flickering_keyboard.xys += movement_vector
-                if random_linear_movements:
-                    flickering_keyboard.xys += linear_movement_vector
-                frame = np.append(frame,1)
-                flickering_keyboard.colors = np.array([frame]*3).T
-                flickering_keyboard.draw()
-                if core.getTime() > next_flip:
-                    if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
-                        # msg = b'\x01\xe1\x01\x00\x02'
-                        msg = b'\x02' # if use trigger hub
+            if screen == 'keyboard':
+                top_text = visual.TextStim(win, pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix', pos=[0,height/2-50],wrapWidth=1500, alignText='left')
+                top_text.size = 50
+                keys = kb.getKeys()
+                for thisKey in keys:
+                    if thisKey=='escape':
+                        if use_dsi_lsl:
+                            for inlet in inlets:
+                                inlet.close_stream()
+                            os.kill(p.pid, sig.CTRL_C_EVENT)
+                        core.quit()
+                iter_frame = iter(enumerate(flickering_frames))
+                key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
+                key_colors[:-1] = [1,1,1]
+                flickering_keyboard.colors = key_colors
+                # for frame in range(ms_to_frame(isi_duration/2*1000, refresh_rate)):
+                #     flickering_keyboard_caps.draw()
+                #     win.flip()
+                for frame in range(ms_to_frame(isi_duration/4*1000, refresh_rate)):
+                    flickering_keyboard.draw()
+                    top_text.draw()
+                    win.flip()
+                for i_frame,frame in iter_frame:
+                    next_flip = win.getFutureFlipTime()
+                    if random_movements:
+                        movement_vector = (np.random.random(size = [n_keyboard_classes,2]) * 2 - 1) * 1
+                        flickering_keyboard.xys += movement_vector
+                    if random_linear_movements:
+                        flickering_keyboard.xys += linear_movement_vector
+                    frame = np.append(frame,1)
+                    flickering_keyboard.colors = np.array([frame]*3).T
+                    flickering_keyboard.draw()
+                    top_text.draw()
+                    if core.getTime() > next_flip:
+                        if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
+                            # msg = b'\x01\xe1\x01\x00\x02'
+                            msg = b'\x02' # if use trigger hub
+                            dsi_serial.write(msg)
+                        key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
+                        key_colors[:-1] = [1,-1,-1]
+                        flickering_keyboard.colors = key_colors
+                        for failure_frame in range(15):
+                            flickering_keyboard.draw()
+                            win.flip()
+                        break
+                    win.flip()
+                    if i_frame == 0 and use_dsi_trigger and use_dsi_lsl:
+                        # msg = b'\x01\xe1\x01\x00\x01'
+                        msg = b'\x01' # if use trigger hub
                         dsi_serial.write(msg)
-                    key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
-                    key_colors[:-1] = [1,-1,-1]
-                    flickering_keyboard.colors = key_colors
-                    for failure_frame in range(15):
-                        flickering_keyboard.draw()
-                        win.flip()
-                    break
-                win.flip()
-                if i_frame == 0 and use_dsi_trigger and use_dsi_lsl:
-                    # msg = b'\x01\xe1\x01\x00\x01'
-                    msg = b'\x01' # if use trigger hub
-                    dsi_serial.write(msg)
-            key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
-            key_colors[:-1] = [1,1,1]
-            flickering_keyboard.colors = key_colors
-            if use_dsi_lsl and make_predictions:
-                time_window = -int(stim_duration*300)-200
-                trial_eeg = np.copy(eeg[time_window:])
-                if(len(np.where(trial_eeg[:,-1]==2.0)[0])==0): # 2.0 or 18.0
-                    dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
-                    trial_start = np.where(trial_eeg[:,-1]==16)[0][0]+43
-                    if trial_eeg[trial_start-44,-1] != 0:
-                        print(':beginning not found1')
-                    trial_eeg = trial_eeg[trial_start:trial_start+int(stim_duration*300),dsi24chans].T
-                    beginning_found = False
-                    while trial_eeg.shape[1] < int(stim_duration*300):
-                        trial_eeg = np.copy(eeg[time_window:])
+                key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
+                key_colors[:-1] = [1,1,1]
+                flickering_keyboard.colors = key_colors
+                if use_dsi_lsl and make_predictions and not first_trial:
+                    time_window = -int(stim_duration*300)-200
+                    trial_eeg = np.copy(eeg[time_window:])
+                    if(len(np.where(trial_eeg[:,-1]==2.0)[0])==0): # 2.0 or 18.0
+                        dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
                         trial_start = np.where(trial_eeg[:,-1]==16)[0][0]+43
                         if trial_eeg[trial_start-44,-1] != 0:
-                            beginning_found = False
-                        else:
-                            beginning_found = True
+                            print(':beginning not found1')
                         trial_eeg = trial_eeg[trial_start:trial_start+int(stim_duration*300),dsi24chans].T
-                    if not beginning_found:
-                        print(':beginning not found2')
-                    prediction = model.predict(trial_eeg)
-                    predited_class_num = keyboard_classes.index(classes[prediction[0]])
-                    key_colors[predited_class_num] = [-1,1,-1]
-            flickering_keyboard_caps.colors = key_colors
-            for frame in range(ms_to_frame(isi_duration/3*1000, refresh_rate)):
-                flickering_keyboard_caps.draw()
-                win.flip()
+                        beginning_found = False
+                        while trial_eeg.shape[1] < int(stim_duration*300):
+                            trial_eeg = np.copy(eeg[time_window:])
+                            trial_start = np.where(trial_eeg[:,-1]==16)[0][0]+43
+                            if trial_eeg[trial_start-44,-1] != 0:
+                                beginning_found = False
+                            else:
+                                beginning_found = True
+                            trial_eeg = trial_eeg[trial_start:trial_start+int(stim_duration*300),dsi24chans].T
+                        if not beginning_found:
+                            print(':beginning not found2')
+                        prediction = model.predict(trial_eeg)
+                        predited_class_num = keyboard_classes.index(classes[prediction[0]])
+                        key_colors[predited_class_num] = [-1,1,-1]
+                        if caps2 == False:
+                            pred_letter = letters[predited_class_num]
+                        else:
+                            pred_letter = letters2[predited_class_num]
+                        # letters = 'AIQYBJRZCKS⌂DLT⎵EMU,FNV.GOW⤒HPX⌫ '
+                        # letters2 = '19/+2(~-3)$⌂4⌫%=5;&<6"*>7!#⤓8?⮐: '
+                        
+                        if pred_letter not in ['⌂','⎵','⤒','⌫','⤓','⮐']:
+                            pred_text += pred_letter
+                        elif pred_letter == '⌫':
+                            pred_text = pred_text[:-1]
+                        elif pred_letter == '⎵':
+                            pred_text += ' '
+                        elif pred_letter == '⤒':
+                            caps2 = True
+                        elif pred_letter == '⤓':
+                            caps2 = False
+                        elif pred_letter == '⌂':
+                            screen = 'homescreen'
+                if first_trial:
+                    first_trial=False
+                if caps2:
+                    flickering_keyboard_caps2.colors = key_colors
+                else:
+                    flickering_keyboard_caps.colors = key_colors
+                for frame in range(ms_to_frame(isi_duration/1.5*1000, refresh_rate)):
+                    if caps2:
+                        flickering_keyboard_caps2.draw()
+                    else:
+                        flickering_keyboard_caps.draw()
+                    top_text.draw()
+                    win.flip()
+            elif screen == 'homescreen':
+                input_text = visual.TextStim(win, 'adkjfb alsd bfkjsvbjkas dbfijdasb jkdbsfliaeh', color=(-1, -1, -1), colorSpace='rgb', units='pix',wrapWidth=50, pos=[-500,0])
+                input_text.size = 50
+                keys = kb.getKeys()
+                for thisKey in keys:
+                    if thisKey=='escape':
+                        if use_dsi_lsl:
+                            for inlet in inlets:
+                                inlet.close_stream()
+                            os.kill(p.pid, sig.CTRL_C_EVENT)
+                            with open("eeg.csv", 'a') as csv_file:
+                                np.savetxt(csv_file, eeg, delimiter=', ')
+                        if use_cyton:
+                            for inlet in inlets:
+                                inlet.close_stream()
+                            stop_cyton.set()
+                            board.stop_stream()
+                            with open("eeg.csv", 'a') as csv_file:
+                                np.savetxt(csv_file, eeg, delimiter=', ')
+                        core.quit()
+                key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
+                # flickering_keyboard.colors = key_colors
+                key_colors[:20] = [0,0,0]
+                flickering_keyboard_caps3.colors = key_colors
+
+                for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
+                    flickering_keyboard_caps3.draw()
+                    input_text.draw()
+                    win.flip()
+                key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
+                key_colors[:-1] = [1,1,1]
+                flickering_keyboard.colors = key_colors
+                for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
+                    flickering_keyboard.draw()
+                    win.flip()
+                flash_successful = False
+                frame_start_time = -1
+                while(not flash_successful):
+                    for i_frame,frame in enumerate(flickering_frames):
+                        frame = np.append(frame,1)
+                        next_flip = win.getFutureFlipTime()
+                        flickering_keyboard.colors = np.array([frame]*3).T
+                        flickering_keyboard.draw()
+                        if core.getTime() > next_flip:
+                            if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
+                                # msg = b'\x01\xe1\x01\x00\x02'
+                                msg = b'\x02' # if use trigger hub
+                                dsi_serial.write(msg)
+                            key_colors = np.array([[-1,-1,-1]]*(n_keyboard_classes+1))
+                            key_colors[:-1] = [1,-1,-1]
+                            # key_colors[class_num] = [1,-1,-1]
+                            flickering_keyboard.colors = key_colors
+                            for failure_frame in range(60):
+                                flickering_keyboard.draw()
+                                win.flip()
+                            break
+                        win.flip()
+
+                        if i_frame == 0:
+                            if use_dsi_trigger and (use_dsi_lsl or use_dsi7):
+                                # msg = b'\x01\xe1\x01\x00\x01'
+                                msg = b'\x01' # if use trigger hub
+                                dsi_serial.write(msg)
+                            frame_start_time = local_clock()
+                        if i_frame == stim_duration_frames - 1:
+                            flash_successful = True
+                            with open("meta.csv", 'a') as csv_file:
+                                csv_file.write(str(flickering_freq)+', '+str(phase_offset) + ', ' + str(frame_start_time) + '\n')
+                key_colors = np.array([[1,1,1]]*(n_keyboard_classes+1))
+                key_colors[:20] = [0,0,0]
+                flickering_keyboard_caps3.colors = key_colors
+                prediction = [-1]
+                if use_dsi_lsl and make_predictions:
+                    time_window = -int(stim_duration*300)-200
+                    trial_eeg = np.copy(eeg[time_window:])
+                    if(len(np.where(trial_eeg[:,-1]==2.0)[0])==0): # 2.0 or 18.0
+                        dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
+                        trial_start = np.where(trial_eeg[:,-1]==16)[0][0]+43
+                        if trial_eeg[trial_start-44,-1] != 0:
+                            print(str(i_trial)+':beginning not found1')
+                        trial_eeg = trial_eeg[trial_start:trial_start+int(stim_duration*300),dsi24chans].T
+                        beginning_found = False
+                        while trial_eeg.shape[1] < int(stim_duration*300):
+                            trial_eeg = np.copy(eeg[time_window:])
+                            trial_start = np.where(trial_eeg[:,-1]==16)[0][0]+43
+                            if trial_eeg[trial_start-44,-1] != 0:
+                                beginning_found = False
+                            else:
+                                beginning_found = True
+                            trial_eeg = trial_eeg[trial_start:trial_start+int(stim_duration*300),dsi24chans].T
+                        if not beginning_found:
+                            print(str(i_trial)+':beginning not found2')
+                        prediction = model.predict(trial_eeg)
+                        predited_class_num = keyboard_classes.index(classes[prediction[0]])
+                        # print(prediction[0])
+                        key_colors[predited_class_num] = [-1,1,-1]
+                for frame in range(ms_to_frame(isi_duration*(1/2)*1000, refresh_rate)):
+                    flickering_keyboard_caps3.draw()
+                    win.flip()
             
     
     if use_dsi_lsl:
