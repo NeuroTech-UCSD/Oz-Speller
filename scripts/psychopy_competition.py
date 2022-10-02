@@ -4,6 +4,8 @@ SSVEP Offline + Realtime Experiment
 Notes:
 - Press esc to quit
 - MAKE SURE refresh_rate IS SET TO YOUR MONITOR'S REFRESH RATE
+- set use_dsi_lsl and make_predictions to True for regular use
+- set use_dsi_lsl and make_predictions to False and dummy_mode to True for dummy mode
 """
 
 from psychopy import visual, core
@@ -20,7 +22,7 @@ sys.path.append('src') # if run from the root project directory
 ## VARIABLES
 use_dsi7 = False
 use_dsi_trigger = True
-use_dsi_lsl = True
+use_dsi_lsl = False
 use_arduino = False # arduino photosensor for flashing timing test
 use_cyton = False
 use_photosensor = False
@@ -28,7 +30,8 @@ record_start_time = True
 center_flash = False # whether the visual stimuli are only presented at the center of the screen
 test_mode = False # whether the script indicates target squares and saves recorded data
 home_screen = False
-make_predictions = True # whether the script makes predictions using a pretrained model
+make_predictions = False # whether the script makes predictions using a pretrained model
+dummy_mode = True
 model = None
 if make_predictions:
     # with open("reports/trained_models/wsx32/fbtdca_1s.pkl", 'rb') as filehandler:
@@ -57,6 +60,7 @@ keyboard_classes=[( 8,0),( 8,0.5),( 8,1),( 8,1.5),
          (13,0),(13,0.5),(13,1),(13,1.5),
          (14,0),(14,0.5),(14,1),(14,1.5),
          (15,0),(15,0.5),(15,1),(15,1.5),]
+dummy_keyboard_string = '1qaz2wsx3edc4rfv5tgb6yhn7ujm8ik,'
 
 # keyboard_classes=[( 8,0),( 8,0.5),( 8,1),
 #          (10,0),(10,0.5),(10,1),
@@ -1273,6 +1277,34 @@ if __name__ == "__main__":
                             caps2 = False
                         elif pred_letter == '⌂':
                             screen = 'homescreen'
+                
+                if not (use_dsi_lsl and make_predictions) and dummy_mode and not first_trial:
+                    predited_class_num = 0
+                    for thisKey in keys:
+                        if thisKey.name in dummy_keyboard_string:
+                            predited_class_num = dummy_keyboard_string.index(thisKey.name)
+                        elif thisKey.name == 'comma':
+                            predited_class_num = dummy_keyboard_string.index(',')
+                    key_colors[predited_class_num] = [-1,1,-1]
+                    if caps2 == False:
+                        pred_letter = letters[predited_class_num]
+                    else:
+                        pred_letter = letters2[predited_class_num]
+                    if pred_letter not in ['⌂','⎵','⤒','⌫','⤓','⮐']:
+                        pred_text += pred_letter
+                    elif pred_letter == '⌫':
+                        pred_text = pred_text[:-1]
+                    elif pred_letter == '⎵':
+                        pred_text += ' '
+                    elif pred_letter == '⮐':
+                        pred_text += '\n'
+                    elif pred_letter == '⤒':
+                        caps2 = True
+                    elif pred_letter == '⤓':
+                        caps2 = False
+                    elif pred_letter == '⌂':
+                        screen = 'homescreen'
+                
                 if first_trial:
                     first_trial=False
                 if caps2:
@@ -1409,6 +1441,41 @@ if __name__ == "__main__":
                         elif pred_letter == '⏪':
                             if isi_duration<2:
                                 isi_duration+=0.2
+
+                if not (use_dsi_lsl and make_predictions) and dummy_mode:
+                    predited_class_num = 0
+                    for thisKey in keys:
+                        if thisKey.name in dummy_keyboard_string:
+                            predited_class_num = dummy_keyboard_string.index(thisKey.name)
+                        elif thisKey.name == 'comma':
+                            predited_class_num = dummy_keyboard_string.index(',')
+                    key_colors[predited_class_num] = [-1,1,-1]
+                    pred_letter = letters3[predited_class_num]
+                    if pred_letter != '⎚':
+                        clear_text_double_check = False
+                    if pred_letter == '⌨':
+                        screen = 'keyboard'
+                        first_trial = True
+                    elif pred_letter == '⌫':
+                        pred_text = pred_text[:-1]
+                    elif pred_letter == '⎚':
+                        if clear_text_double_check:
+                            pred_text = ''
+                            clear_text_double_check = False
+                        else:
+                            clear_text_double_check = True
+                    elif pred_letter == '⏳':
+                        short_timeout = True
+                    elif pred_letter == '⌚':
+                        mid_timeout = True
+                    elif pred_letter == '⏰':
+                        long_timeout = True
+                    elif pred_letter == '⏩':
+                        if isi_duration>1:
+                            isi_duration-=0.2
+                    elif pred_letter == '⏪':
+                        if isi_duration<2:
+                            isi_duration+=0.2
 
                 speed = int(11 - isi_duration/0.2)
                 speed_text = visual.TextStim(win, 'speed: ' + str(speed), color=(-1, -1, -1), colorSpace='rgb', units='pix', pos=[0,height/2-50],wrapWidth=1500, alignText='left')
