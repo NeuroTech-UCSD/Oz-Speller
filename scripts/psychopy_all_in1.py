@@ -589,14 +589,14 @@ if use_cyton:
 ## EXPERIMENT
 
 # if this script is run as a script rather than imported
-if __name__ == "__main__": 
+if __name__ == "__main__":
     kb = keyboard.Keyboard()
     win = visual.Window(
-        size = [1920,1080],
-        checkTiming = True,
-        allowGUI = False,
-        fullscr = True,
-        useRetina = use_retina
+        size=[1920, 1080],
+        checkTiming=True,
+        allowGUI=False,
+        fullscr=True,
+        useRetina=use_retina
     )
     [win_w,win_h] = win.size
     if use_retina:

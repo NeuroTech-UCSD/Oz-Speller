@@ -17,7 +17,34 @@ import sys, time, serial, pickle
 from pylsl import local_clock
 sys.path.append('src') # if run from the root project directory
 
+import socketio
+import asyncio
 # █████████████████████████████████████████████████████████████████████████████
+
+## Asyncio
+sio = socketio.AsyncClient()
+PORT = 4002
+
+async def dsi():
+    await sio.connect(f'http://localhost:{PORT}', namespaces=['/', '/dsi_simulator'])
+    await sio.wait()
+
+asyncio.run(dsi())
+
+
+@sio.event
+async def connect():
+    print('dsi connected')
+
+
+@sio.event
+async def connect_error(e):
+    print('Connection error:', e)
+
+
+@sio.event
+async def disconnect():
+    print('dsi disconnected')
 
 ## VARIABLES
 use_dsi7 = False
