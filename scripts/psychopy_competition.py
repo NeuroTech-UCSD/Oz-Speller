@@ -22,16 +22,16 @@ sys.path.append('src') # if run from the root project directory
 ## VARIABLES
 use_dsi7 = False
 use_dsi_trigger = True
-use_dsi_lsl = False
+use_dsi_lsl = True
 use_arduino = False # arduino photosensor for flashing timing test
 use_cyton = False
 use_photosensor = False
 record_start_time = True
 center_flash = False # whether the visual stimuli are only presented at the center of the screen
-test_mode = False # whether the script indicates target squares and saves recorded data
+test_mode = True # whether the script indicates target squares and saves recorded data
 home_screen = False
-make_predictions = False # whether the script makes predictions using a pretrained model
-dummy_mode = True
+make_predictions = True # whether the script makes predictions using a pretrained model
+dummy_mode = False
 model = None
 if make_predictions:
     # with open("reports/trained_models/wsx32/fbtdca_1s.pkl", 'rb') as filehandler:
@@ -1012,7 +1012,7 @@ if __name__ == "__main__":
             prediction = [-1]
             if use_dsi_lsl and make_predictions:
                 # trial_eeg = np.copy(eeg[-700:])
-                time_window = -int(stim_duration*300)-200
+                time_window = -int(stim_duration*300)-250
                 trial_eeg = np.copy(eeg[time_window:])
                 if(len(np.where(trial_eeg[:,-1]==2.0)[0])==0): # 2.0 or 18.0
                     # print(trial_eeg[np.where(trial_eeg[:,-1]==16.0)[0][0]+40:,1:-1].T.shape)
@@ -1234,7 +1234,7 @@ if __name__ == "__main__":
                 key_colors[:-1] = [1,1,1]
                 flickering_keyboard.colors = key_colors
                 if use_dsi_lsl and make_predictions and not first_trial:
-                    time_window = -int(stim_duration*300)-200
+                    time_window = -int(stim_duration*300)-250
                     trial_eeg = np.copy(eeg[time_window:])
                     if(len(np.where(trial_eeg[:,-1]==2.0)[0])==0): # 2.0 or 18.0
                         dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
@@ -1391,7 +1391,7 @@ if __name__ == "__main__":
                 flickering_keyboard_caps3.colors = key_colors
                 prediction = [-1]
                 if use_dsi_lsl and make_predictions:
-                    time_window = -int(stim_duration*300)-200
+                    time_window = -int(stim_duration*300)-250
                     trial_eeg = np.copy(eeg[time_window:])
                     if(len(np.where(trial_eeg[:,-1]==2.0)[0])==0): # 2.0 or 18.0
                         dsi24chans = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,19,22,23]
