@@ -25,6 +25,7 @@ sys.path.append('src')  # if run from the root project directory
 ## VARIABLES
 use_dsi7 = False
 use_dsi_trigger = True
+
 use_dsi_lsl = False
 use_arduino = False  # arduino photosensor for flashing timing test
 use_cyton = False
@@ -35,6 +36,7 @@ test_mode = False  # whether the script indicates target squares and saves recor
 home_screen = False
 make_predictions = False  # whether the script makes predictions using a pretrained model
 dummy_mode = True
+
 model = None
 if make_predictions:
     # with open("reports/trained_models/wsx32/fbtdca_1s.pkl", 'rb') as filehandler:
