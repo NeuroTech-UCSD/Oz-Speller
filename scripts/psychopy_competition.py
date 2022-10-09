@@ -87,8 +87,8 @@ first_call = True
 
 ## FUNCTIONS
 
-def get_content():
-    with open("states/front_to_back.yaml", "r") as file:
+def get_content(dir="states/front_to_back.yaml"):
+    with open(dir, "r") as file:
         try:
             content = yaml.safe_load(file)
             return content
@@ -1426,8 +1426,12 @@ if __name__ == "__main__":
                     win.flip()
             elif screen == 'homescreen':
                 input_text = visual.TextStim(win, pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',
-                                             wrapWidth=850, pos=[-300, 0], alignText='left')
-                input_text.size = 40
+                                             wrapWidth=850, pos=[-300, -220], alignText='left')
+                input_text.size = 35
+                chat_history_text = get_content(dir='states/back_to_front.yaml')['text']
+                chat_history = visual.TextStim(win, chat_history_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',
+                                             wrapWidth=850, pos=[-300, 300], alignText='left',anchorVert='top')
+                chat_history.size = 35
                 keys = kb.getKeys()
                 for thisKey in keys:
                     if thisKey == 'escape':
@@ -1453,6 +1457,7 @@ if __name__ == "__main__":
                 for frame in range(ms_to_frame(isi_duration * (1 / 2) * 1000, refresh_rate)):
                     flickering_keyboard_caps3.draw()
                     input_text.draw()
+                    chat_history.draw()
                     win.flip()
                 key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
                 key_colors[:-1] = [1, 1, 1]
@@ -1599,6 +1604,7 @@ if __name__ == "__main__":
                     speed_text.draw()
                     flickering_keyboard_caps3.draw()
                     input_text.draw()
+                    chat_history.draw()
                     win.flip()
 
                 if short_timeout or mid_timeout or long_timeout:
@@ -1636,6 +1642,7 @@ if __name__ == "__main__":
                         timeout_text.draw()
                         flickering_keyboard_caps3.draw()
                         input_text.draw()
+                        chat_history.draw()
                         win.flip()
                     short_timeout = False
                     mid_timeout = False
