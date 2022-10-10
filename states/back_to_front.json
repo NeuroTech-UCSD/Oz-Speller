@@ -1,0 +1,27 @@
+{
+    "content": [
+        {
+        "sender": "Caretaker",
+        "text": "Hello. How are you?",
+        "timestamp": "5:00PM",
+        "n_lines": "3"
+        }
+        ,{
+        "sender": "Patient",
+        "text": "I'M GOOD. HOW ABOUT YOU?",
+        "timestamp": "5:03PM",
+        "n_lines": "3"
+        }
+        ,{
+        "sender": "Caretaker",
+        "text": "I'm good as well. Anything that you need?",
+        "timestamp": "5:04PM",
+        "n_lines": "3"
+        },{
+        "sender": "Patient",
+        "text": "CAN I HAVE SOME FOOD PLEASE?",
+        "timestamp": "5:07PM",
+        "n_lines": "3"
+        }
+    ]
+}

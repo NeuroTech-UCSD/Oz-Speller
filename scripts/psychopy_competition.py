@@ -13,6 +13,7 @@ from psychopy.hardware import keyboard
 import numpy as np
 from scipy import signal
 import yaml
+import json
 import random
 import sys, time, serial, pickle
 from pylsl import local_clock
@@ -87,14 +88,43 @@ first_call = True
 
 ## FUNCTIONS
 
-def get_content():
-    with open("states/front_to_back.yaml", "r") as file:
-        try:
-            content = yaml.safe_load(file)
+def get_content(dir="states/front_to_back.yaml", use_yaml=True):
+    if use_yaml:
+        with open(dir, "r") as file:
+            try:
+                content = yaml.safe_load(file)
+                return content
+            except yaml.YAMLError as exc:
+                print(exc)
+    else:
+        with open(dir, "r") as file:
+            content = json.load(file)
             return content
-        except yaml.YAMLError as exc:
-            print(exc)
 
+def parse_chat_history(json_obj : dict):
+    chat_history_text = ''
+    content_list = json_obj['content']
+    line_count = 0
+    max_lines = 15
+    msg_start_ind = -1
+    for i_msg, msg in reversed(list(enumerate(content_list))):
+        n_lines = int(msg['n_lines'])
+        line_count += n_lines
+        if line_count <= max_lines:
+            msg_start_ind = i_msg
+        else:
+            break
+    content_list = content_list[msg_start_ind:]
+    for i_msg, msg in enumerate(content_list):
+        if i_msg != 0:
+            chat_history_text += '\n'
+        chat_history_text += msg['sender']
+        chat_history_text += '    '
+        chat_history_text += msg['timestamp']
+        chat_history_text += '\n'
+        chat_history_text += msg['text']
+        chat_history_text += '\n'
+    return chat_history_text
 
 def update_text(new_text: str):
     content = get_content()
@@ -1426,8 +1456,12 @@ if __name__ == "__main__":
                     win.flip()
             elif screen == 'homescreen':
                 input_text = visual.TextStim(win, pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',
-                                             wrapWidth=850, pos=[-300, 0], alignText='left')
-                input_text.size = 40
+                                             wrapWidth=850, pos=[-300, -220], alignText='left')
+                input_text.size = 35
+                chat_history_text = parse_chat_history(get_content(dir='states/back_to_front.json',use_yaml=False))
+                chat_history = visual.TextStim(win, chat_history_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',
+                                             wrapWidth=850, pos=[-300, 300], alignText='left',anchorVert='top')
+                chat_history.size = 30
                 keys = kb.getKeys()
                 for thisKey in keys:
                     if thisKey == 'escape':
@@ -1453,6 +1487,7 @@ if __name__ == "__main__":
                 for frame in range(ms_to_frame(isi_duration * (1 / 2) * 1000, refresh_rate)):
                     flickering_keyboard_caps3.draw()
                     input_text.draw()
+                    chat_history.draw()
                     win.flip()
                 key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
                 key_colors[:-1] = [1, 1, 1]
@@ -1599,6 +1634,7 @@ if __name__ == "__main__":
                     speed_text.draw()
                     flickering_keyboard_caps3.draw()
                     input_text.draw()
+                    chat_history.draw()
                     win.flip()
 
                 if short_timeout or mid_timeout or long_timeout:
@@ -1636,6 +1672,7 @@ if __name__ == "__main__":
                         timeout_text.draw()
                         flickering_keyboard_caps3.draw()
                         input_text.draw()
+                        chat_history.draw()
                         win.flip()
                     short_timeout = False
                     mid_timeout = False
