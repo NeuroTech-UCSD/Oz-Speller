@@ -12,7 +12,7 @@ old_content = current_content = ''
 
 @sio.event
 async def connect():
-    print('facilitator connected')
+    print('dsi connected')
 
 
 @sio.event
@@ -22,7 +22,7 @@ async def connect_error(e):
 
 @sio.event
 async def disconnect():
-    print('facilitator disconnected')
+    print('dsi disconnected')
 
 
 def update_content():
@@ -53,7 +53,7 @@ def send_detected() -> bool:
         return False
 
 
-async def _facilitator():
+async def _dsi():
     """
 
     :param include_enter: whether to include enter key every N characters, N is hard set in the code
@@ -61,21 +61,21 @@ async def _facilitator():
     """
     reset_content()
     while True:
-        await sio.sleep(1)
+        await sio.sleep(0.8)
         update_content()
         if send_detected():
             message = current_content['text'][:-1]
             print('Sending message:', message)
-            await sio.emit('forward_prediction', message, namespace='/dsi')
+            await sio.emit('forward_message', message, namespace='/dsi')
             reset_content()
 
 
 
 
-async def facilitator():
+async def dsi():
     await sio.connect(f'http://localhost:{PORT}', namespaces=['/', '/dsi'])
-    await sio.start_background_task(_facilitator)
+    await sio.start_background_task(_dsi)
 
 
 if __name__ == '__main__':
-    asyncio.run(facilitator())
+    asyncio.run(dsi())
