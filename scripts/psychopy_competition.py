@@ -1455,8 +1455,8 @@ if __name__ == "__main__":
                     top_text.draw()
                     win.flip()
             elif screen == 'homescreen':
-                input_text = visual.TextStim(win, pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',
-                                             wrapWidth=850, pos=[-300, -220], alignText='left')
+                input_text = visual.TextStim(win, 'Input: ' + pred_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',
+                                             wrapWidth=850, pos=[-300, -270], alignText='left')
                 input_text.size = 35
                 chat_history_text = parse_chat_history(get_content(dir='states/back_to_front.json',use_yaml=False))
                 chat_history = visual.TextStim(win, chat_history_text, color=(-1, -1, -1), colorSpace='rgb', units='pix',

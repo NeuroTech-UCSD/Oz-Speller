@@ -20,11 +20,11 @@ def get_content(filepath: str):
 
 
 def update_content(filepath: str, sender: str, text: str):
-    n_chars_in_line = 60  # number of characters in a line
+    n_chars_in_line = 40  # number of characters in a line
     json_obj = get_content(filepath)
     json_obj['content'].append(
         {'sender': sender, 'text': text, 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-         'n_lines': np.ceil(len(text) / n_chars_in_line) + 1})
+         'n_lines': np.ceil(len(text) / n_chars_in_line) + 2})
 
     with open(filepath, "w") as file:
         json.dump(json_obj, file)
