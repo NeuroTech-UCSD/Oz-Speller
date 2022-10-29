@@ -1,2 +1,2 @@
 default:
-	@echo $(PATHg)
+	echo "hi"

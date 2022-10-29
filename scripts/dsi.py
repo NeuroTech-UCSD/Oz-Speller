@@ -3,10 +3,11 @@ import asyncio
 import socketio
 import random
 import yaml
+import settings
 
 sio = socketio.AsyncClient()
-PORT = 4002
-ISI = 3  # inter-stimulus-interval in seconds
+PORT = settings.Configuration.app['port']
+HOST = settings.Configuration.app['host']
 old_content = current_content = ''
 
 
@@ -73,7 +74,7 @@ async def _dsi():
 
 
 async def dsi():
-    await sio.connect(f'http://192.168.167.132:{PORT}', namespaces=['/', '/dsi'])
+    await sio.connect(f'http://{HOST}:{PORT}', namespaces=['/', '/dsi'])
     await sio.start_background_task(_dsi)
 
 
