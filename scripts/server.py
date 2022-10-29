@@ -5,6 +5,9 @@ import json
 from datetime import datetime
 import numpy as np
 from datetime import datetime
+import settings
+
+PORT = settings.Configuration.app['port']
 
 
 def reset_content(filepath: str):
@@ -30,6 +33,26 @@ def update_content(filepath: str, sender: str, text: str):
         json.dump(json_obj, file)
 
 
+class ChatbotListener(socketio.AsyncNamespace):
+    def on_connect(self, sid, environ):
+        print('chatbot listener connected')
+
+    def on_disconnect(self, sid):
+        print('chatbot listener disconnected')
+
+
+class Chatbot(socketio.AsyncNamespace):
+    def on_connect(self, sid, environ):
+        print('chatbot connected')
+
+    def on_disconnect(self, sid):
+        print('chatbot disconnected')
+
+    async def on_forward_chatbot(self, sid, data):
+        print('Forwarding chatbot message: ' + data)
+        await self.emit('chatbot_message', data, namespace='/caretaker')
+
+
 class DSI(socketio.AsyncNamespace):
 
     def on_connect(self, sid, environ):
@@ -42,23 +65,24 @@ class DSI(socketio.AsyncNamespace):
         message = data
         print('Received DSI message:', data)
         # writing message to local back_to_front.json for chat history
-        update_content('states/back_to_front.json', sender='Patient', text=message)
+        await self.emit('update_content_channel', {'sender': 'Patient', 'text': message}, namespace='/chatbot_listener')
         # forward message to frontend
         await self.emit('get_message', message, namespace='/caretaker')
+        await self.emit('get_chatbot_message', message, namespace='/chatbot')
 
 
 class Caretaker(socketio.AsyncNamespace):
-
     def on_connect(self, sid, environ):
         print('caretaker connected')
 
     def on_disconnect(self, sid):
-        print('cartaker disconnected')
+        print('caretaker disconnected')
 
     async def on_forward_message(self, sid, data):
         message = data
         print('Received caretaker message:', message)
         # writing message to local back_to_front.json
+        await self.emit('update_content_channel', {'sender': 'Caretaker', 'text': message}, namespace='/chatbot')
         update_content('states/back_to_front.json', sender='Caretaker', text=message)
 
 
@@ -70,7 +94,9 @@ class Server:
         self.sio.attach(self.app)
         self.sio.register_namespace(DSI('/dsi'))
         self.sio.register_namespace(Caretaker('/caretaker'))
-        self.port = 4002
+        self.sio.register_namespace(Chatbot('/chatbot'))
+        self.sio.register_namespace(ChatbotListener('/chatbot_listener'))
+        self.port = PORT
         self.config = {'patient_id': 12345, 'date': None}
 
     async def get_config(self, sid):
@@ -81,9 +107,9 @@ class Server:
 
     def start_server(self):
         reset_content('states/back_to_front.json')
-        self.sio.on('get config', self.get_config)
-        self.sio.on('form submitted', self.display_config)
-        web.run_app(self.app, host='0.0.0.0', port=self.port)  # we're using local host here
+        # self.sio.on('get config', self.get_config)
+        # self.sio.on('form submitted', self.display_config)
+        web.run_app(self.app, host='0.0.0.0', port=self.port)
 
 
 if __name__ == '__main__':

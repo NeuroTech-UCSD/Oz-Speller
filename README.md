@@ -54,6 +54,12 @@ being the channel names.
 ## Evaluation
 `py src/models/evaluation.py ${CHECKPOINT_PATH} ${TEST_DATA_PATH}` to evaluate model performance
 
+## To trigger frontend
+- `python scripts/server.py` to create server
+- `python scripts/dsi.py` to start listening to any changes ...
+- `python scripts/dsi_helper.py` to ...
+- `python scripts/psychopy_competition.py` to ...
+
 ## Acknowledgement
 Put the team and partners here.
 

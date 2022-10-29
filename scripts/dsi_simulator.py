@@ -44,7 +44,7 @@ async def _dsi_simulator():
 
 
 async def dsi_simulator():
-    host = '100.112.226.8'
+    host = '100.84.31.10'
     await sio.connect(f'http://{host}:{PORT}', namespaces=['/', '/dsi'])
     await sio.start_background_task(_dsi_simulator)
     await sio.wait()
