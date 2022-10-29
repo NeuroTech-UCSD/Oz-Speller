@@ -26,7 +26,6 @@ sys.path.append('src')  # if run from the root project directory
 ## VARIABLES
 use_dsi7 = False
 use_dsi_trigger = True
-
 use_dsi_lsl = False
 use_arduino = False  # arduino photosensor for flashing timing test
 use_cyton = False
@@ -744,7 +743,8 @@ if True:
     # letters += ' '
     # letters = 'AIQYBJRZCKS⌂DLT⎵EMU,FNV.GOW↨HPX⌫ '
     # letters = 'AIQYBJRZCKS⌂DLT⎵EMU,FNV.GOW⤒HPX⌫ '
-    letters = 'AIQYBJRZCKS⌂D⌫T⎵EMU,FNV.GOW⤒HPXL '
+    # letters = 'AIQYBJRZCKS⌂D⌫T⎵EMU,FNV.GOW⤒HPXL '
+    letters = 'AIQYBJRZCKS⌂D⌫T⎵EMULFNV.GOW⤒HPX, '
     # letters2 = '19/+2(~-3)$⌂4:%=5;&<6"*>7!#↨8?⮐⌫ '
     # letters2 = '19/+2(~-3)$⌂4:%=5;&<6"*>7!#⤓8?⮐⌫ '
     # letters2 = '19/+2(~-3)$\'4⌫%=5;&<6"*>7!#⤓8?⮐: '

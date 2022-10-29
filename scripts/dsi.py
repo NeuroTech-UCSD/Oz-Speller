@@ -73,7 +73,7 @@ async def _dsi():
 
 
 async def dsi():
-    await sio.connect(f'http://localhost:{PORT}', namespaces=['/', '/dsi'])
+    await sio.connect(f'http://192.168.167.132:{PORT}', namespaces=['/', '/dsi'])
     await sio.start_background_task(_dsi)
 
 
