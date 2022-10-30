@@ -17,8 +17,8 @@ Check, check, and check. This is the **ultimate EEG spelling machine** combined 
 
 ## Getting Started
 - Run `pip install -r requirements.txt` to install the dependencies.
-- In [`/scripts`](https://github.com/NeuroTech-UCSD/Project-Template/tree/main/scripts), `python main.py` will run the app.
-- Upload the entire project folder to Google drive, and open the .ipynb files in Colab to run the demo notebooks.
+<!-- - In [`/scripts`](https://github.com/NeuroTech-UCSD/Project-Template/tree/main/scripts), `python main.py` will run the app.
+- Upload the entire project folder to Google drive, and open the .ipynb files in Colab to run the demo notebooks. -->
 
 ## Github Directories
 <!-- ![](./figures/github_schema.png) -->
@@ -102,9 +102,50 @@ If you choose to use DSI-24, we recommend using it with the Wearable Sensing Tri
 
 ## Data Analysis & Models
 ### Arico dataset
-### 36-class dataset 
-### Competition dataset
+The Arico Dataset is a public dataset we initally used to learn about SSVEP as well as using a benchmark on what our own dataset is supposed to look like. When enough trials are time-avaraged, a good-quality SSVEP signal should look oscillatory roughly 0.14 second after the onset of the flashing stimulus: 
+</br>
+![AVG](./reports/figures/arico_avg.png) 
+</br>
 
+### 32-class center-flash dataset
+Hour-long pilotings were done with EEG from looking at a single square flashing at the center of the screen. Inital breakthough came where we first detect oscillatory peaks in the EEG data after months of trial-and-error:
+</br>
+![INIT](./reports/figures/initial.png) 
+</br>
+From there we validated the presence of oscillations from DSI-7 and produced figures such as this
+</br>
+![FOURTY](./reports/figures/40-class.png) 
+</br>
+But it proved difficult to validate phase offsets when they are spaced out so evenly. So to better very the presense of phase-offsets in the EEG data, we scaled the amount of classes down to 32 and used only 4 phases for each of 8 frequencies, rather than 1 unique phase for each unique frequency. </br>
+At this stage, we also implemented a state-of-the-art deep learning model on the 32-class SSVEP data we recorded, called EEGNet:
+</br>
+![EEGNET](./reports/figures/eegnet.png) 
+</br>
+We also developed our own spectral-variance-based filter to supress the noises in the alpha region, which improved the accuracy of EEGNet by about 10%:
+</br>
+![FILTER](./reports/figures/signal_a2.gif) 
+</br>
+<!-- ![IMPROVE](./reports/figures/improvement.png)  -->
+<img src="./reports/figures/improvement.png" width="400"></img>
+</br>
+The catch was that we needed at least 20 trials for each class for EEGNet to achieve a decent validation accuracy with 5 seconds flashing for each trial, and it only works when there is only a single square flashing at one time. So clearly, an alternative approach was needed.
+
+### Competition dataset
+In our final dataset, only 1.2 second of flashing is needed thanks to a completely different model called **Task-Related Component Analysis (TRCA)**. It belongs to a family of **correlation-based** spatial filtering algorithms, with the other notable example being **Canonical-Correlation Analysis (CCA)**. TRCA tries to maximize correlation between each trial labeled with the same class, while CCA tries to maximize the correlation between each trial with an a-priori template for that class. Both are good at detecting oscillations, as correlation-based methods are more resilient to noises than spectral-based analysis. Here is an example of a time-averaged SSVEP template before and after being filtered by TRCA:
+</br>
+![BEFORE](./reports/figures/before_trca.png) 
+</br>
+![AFTER](./reports/figures/after_trca.png) 
+</br>
+As you can see, after filtering it is actually possible to count the number of oscillations in 1 second. As you might have guessed, it is from 15Hz flashing, with each color representing a phase-offset. </br>
+Typically you can calculate the inverse-transpose of the spatial filter to derive a spatial pattern, which is not used, but visually interpretable. Here is an example of a learned spatial pattern from TRCA from a different dataset:
+</br>
+![PATTERN](./reports/figures/spatial_pattern.png) 
+</br>
+Once the spatial filter is learned, it is applied to all 32 time-averaged signals and the new trial that needs to be classified, and the filtered time-averaged signal that has the highest Pearson Correlation with the filtered new trial is the predicted class. In fact, the Pearson Correlation values themselves ARE the prediction probabilities:
+</br>
+![PROB](./reports/figures/prediction_probability.png) 
+</br>
 
 ## Acknowledgement
 Put the team and partners here.
