@@ -1,9 +1,14 @@
-# Oz-Speller: An Occipital EEG Channel-Driven Steady-State Visual Evoked Potential-Based Virtual Keyboard
-A fast EEG keyboard combined with a companion app for locked-in patients to better communicate with their caretakers.</br>
+# Oz-Speller: A Fast Occipital Channel-Driven Steady-State Visual Evoked Potential-Based Virtual Keyboard
+
+## **1.2**-second classification, 85% accuracy, 32 classes
+This is the **ultimate EEG spelling machine** combined with a companion app that uses a **GPT-based language model** for locked-in patients to better communicate with their caretakers.</br>
 
 ![GIF DEMO](./reports/figures/speller.gif)
 
-Checkout our presentation video:
+## Presentation Video 
+
+</br>
+
 [![PRESENTATION VIDEO](https://img.youtube.com/vi/-5eUUtTdpno/0.jpg)](https://www.youtube.com/watch?v=-5eUUtTdpno)
 
 </br>
