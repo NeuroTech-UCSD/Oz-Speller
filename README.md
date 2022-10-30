@@ -64,7 +64,12 @@ Once you have successfully trained the model:
   - Set `make_predictions` to `True`, and set the first string under `open()` to `'/reports/trained_models/32-class_speller/DSI-24/[YOUR_NAME]/fbtdca_1s.pkl'`
 - From the root directory, run `python scripts/psychopy_competition.py` 
 ### Configure DSI-24
-- Follow the setup instruction for DSI-24 on the Wearable Sensing's [official website](https://wearablesensing.com/dsi-24/)
+- Follow the setup instruction for DSI-24 on the Wearable Sensing's [official website](https://wearablesensing.com/dsi-24/). Use the **DSI Streamer** by Wearable Sensing to ensure low impedance for the electrodes, particularly the common reference and the occipital channels.
+</br>
+<!-- ![MONTAGE](./reports/figures/montage.png) -->
+<img src="./reports/figures/montage.png" width="200"></img>
+</br>
+
 - Open [`/scripts/psychopy_competition.py`](https://github.com/NeuroTech-UCSD/Oz-Speller/blob/main/scripts/psychopy_competition.py) with your preferred text editor. Scroll to the subsection `if use_dsi_lsl`: 
   - Change `'--port=COM15'` to the port DSI-24 is assigned to
   - Change the `'COM14'` in `dsi_serial = serial.Serial('COM14', 9600)` to the port the Trigger Hub is assigned to
@@ -72,6 +77,13 @@ Once you have successfully trained the model:
 
 ## Data validation
 ### Spectral Analysis check with FFT : Oscillatory peaks and Phase offset (figure)
+The speller is able to classify each trial in just 1.2 second, but to see the oscillation peak in the spectral domain more clearly for signal quality validation purposes longer stimulation duration is recommended. Here is an example of the oscillatory peak in the EEG using Fast Fourier Transform (FFT) from multiple trials of 5-second long 15Hz flashing: </br>
+![PSD](./reports/figures/psd.png)
+</br>
+If your EEG system is timed well, you should even be able to visualize the phase angles in addition to the frequency amplitude using FFT through a diagram called complex spectrum. Here is an example of the separation of phase angles in the complex spectrum for the same data: </br>
+![PHASES](./reports/figures/phase_offsets.png) </br>
+Each dot represents the phase angle of 15Hz for a single trial. Each color represents a phase-offset orthogonal to the other ones. The larger circle around the dots represents the "spread" of the phase angles for that particular phase-offset. And the outer-most circles represents the largest oscillatory amplitude for that single trial.
+
 ### Photosensor (figure)
 ### Trigger Hub
 
