@@ -138,11 +138,11 @@ In our final dataset, only 1.2 second of flashing is needed thanks to a complete
 ![AFTER](./reports/figures/after_trca.png) 
 </br>
 As you can see, after filtering it is actually possible to count the number of oscillations in 1 second. As you might have guessed, it is from 15Hz flashing, with each color representing a phase-offset. </br>
-Typically you can calculate the inverse-transpose of the spatial filter to derive a spatial pattern, which is not used, but visually interpretable. Here is an example of a learned spatial pattern from TRCA from a different dataset:
+Typically you can calculate the inverse-transpose of the spatial filter matrix and take the first vector to derive a spatial pattern, which is not used, but visually interpretable. Here is an example of a learned spatial pattern from TRCA from a different dataset:
 </br>
 ![PATTERN](./reports/figures/spatial_pattern.png) 
 </br>
-Once the spatial filter is learned, it is applied to all 32 time-averaged signals and the new trial that needs to be classified, and the filtered time-averaged signal that has the highest Pearson Correlation with the filtered new trial is the predicted class. In fact, the Pearson Correlation values themselves ARE the prediction probabilities:
+Once the spatial filter is learned, it is applied to all 32 time-averaged signals and the new trial that needs to be classified, and the filtered time-averaged signal that has the highest Pearson Correlation with the filtered new trial is the predicted class. In fact, the Pearson Correlation values themselves ARE the prediction probabilities, and here is a lot of the averaged prediction probabilities from our offline analysis:
 </br>
 ![PROB](./reports/figures/prediction_probability.png) 
 </br>
@@ -152,7 +152,6 @@ Eventually we settle on Task-Discriminant Component Analysis, which is also a co
 </br>
 
 ## Acknowledgement
-Put the team and partners here.
 - Wearable Sensing
 - Brainda EEG modeling toolkit: 
 - TRCA:
