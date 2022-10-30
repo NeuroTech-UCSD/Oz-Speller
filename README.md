@@ -85,37 +85,26 @@ If your EEG system is timed well, you should even be able to visualize the phase
 Each dot represents the phase angle of 15Hz for a single trial. Each color represents a phase-offset orthogonal to the other ones. The larger circle around the dots represents the "spread" of the phase angles for that particular phase-offset. And the outer-most circles represents the largest oscillatory amplitude for that single trial.
 
 ### Photosensor (figure)
+One of the most common causes of low accuracy for an SSVEP speller is low timing precision. We chose **PsychoPy** as the stimulus presentation software because of its ability to present visual stimuli at a frame-by-frame fashion to ensure good timing. Extra care was taken to ensure frame-skips happen as little as possible when large number of stimuli are flashing simultaneously by using `ElementArrayStim`, which optimizes the shader rendering. But in case of frame skips due to hardware variations, you can check whether your stimuli are presented properly using a TEMT6000 photosensor connected to an arduino. Here is an example of what the photosensor data should look like if there is no frame-skips: </br>
+![GOODTIMING](./reports/figures/good_timing.png)
+</br>
+And below are examples of what it would look like if there are frame skips:
+</br>
+![SKIP1](./reports/figures/skip1.png)
+</br>
+![SKIP2](./reports/figures/skip2.png) 
+</br>
+![SKIP3](./reports/figures/skip3.png) 
+</br>
+
 ### Trigger Hub
+If you choose to use DSI-24, we recommend using it with the Wearable Sensing Trigger Hub to ensure the best timing possible with your headset. Connect the photo-trigger to the Trigger Hub and attach it to the top-right corner of the screen so that it can detect when a trial has started. In the `eeg.csv` data, the marker stream from the Trigger Hub corresponds to the `TRG` channel, and it is 16 when light is detected, and 0 otherwise. So the onset of a trial is the first sample point where `TRG` goes from 0 to 16.
 
 ## Data Analysis & Models
 ### Arico dataset
 ### 36-class dataset 
 ### Competition dataset
 
-## Prepare Data
-- `py src/data/make_dataset.py ${RAW_DATA_DIR} ${OUTPUT_PATH}` to parse raw continuous data into bandpass trialized data for modeling. The output data will be numpy data with the shape: (trials, num_targets, channels, timepoints) 
-  - ${RAW_DATA_DIR} should have two files in it, meta.csv and eeg.csv.
-  - eeg.csv will have the first column being the timestamps, and the rest of the columns
-being the channel names. 
-  - meta.csv has no headers, its 1st column is the corresponding freq of our targets, 2nd column is the phase offset, and 
-3rd column is the time with timepoint as units
-- `py src/data/split_dataset.py ${EEG_DATA_PATH} ${LABEL_DATA_PATH} -train -val -test ${OUTPUT_PATH}` 
-  - ${EEG_DATA_PATH} should contain data with the shape in npy format: (trials, num_targets, channels, timepoints)
-  - ${EEG_DATA_PATH} should contain data with the shape in npy format: (trials, num_targets)
-  - `-train` specifies the proportion of training data `-val` and `-test` for the validation and testing data respectively. The proportions must sum up to 1.
-
-
-## Models
-- `py src/models/train.py ${TRAIN_DATA_PATH} ${VALIDATION_DATA_PATH} ${OUTPUT_PATH}` to train the model and save it
-
-## Evaluation
-`py src/models/evaluation.py ${CHECKPOINT_PATH} ${TEST_DATA_PATH}` to evaluate model performance
-
-## To trigger frontend
-- `python scripts/server.py` to create server
-- `python scripts/dsi.py` to start listening to any changes ...
-- `python scripts/dsi_helper.py` to ...
-- `python scripts/psychopy_competition.py` to ...
 
 ## Acknowledgement
 Put the team and partners here.
