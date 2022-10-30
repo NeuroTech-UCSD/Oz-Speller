@@ -1,7 +1,7 @@
 # Oz-Speller: A Fast Occipital Channel-Driven Steady-State Visual Evoked Potential-Based Virtual Keyboard
 
-## _**1.2**_-second classification, 85% accuracy, 32 classes
-This is the **ultimate EEG spelling machine** combined with a companion app that uses a **GPT-based language model** for locked-in patients to better communicate with their caretakers. All that speed is right in front of your retina, made more available than ever. Only a few lines in the command line, and you have it.</br>
+## _**1.2**_-second speed, 85% accuracy, 32 choices
+Check, check, and check. This is the **ultimate EEG spelling machine** combined with an intelligent companion app with a chatbot that uses a **GPT-based language model**. Designed with locked-in patients in mind so they can communicate with their caretakers more efficiently, it is user-centric as it is powerful. All that _**speed**_ is right in front of your retina, made more available than ever. Simply type in a few lines of code in your command line, and you have it.</br>
 
 ![GIF DEMO](./reports/figures/speller.gif)
 
@@ -37,7 +37,7 @@ This is the **ultimate EEG spelling machine** combined with a companion app that
 Editing...
 
 ## Reproduce GUI with headset
-### Create the dataset
+### Record the dataset
 - Configure DSI-24 or configure code for other EEG headsets
 - Open [`/scripts/psychopy_competition.py`](https://github.com/NeuroTech-UCSD/Oz-Speller/blob/main/scripts/psychopy_competition.py) with your preferred text editor. Scroll to the subsection `VARIABLES`: 
   - Set `use_dsi_lsl` to `True`
@@ -71,7 +71,7 @@ Once you have successfully trained the model:
 - Contact Wearable Sensing for further assistence if needed.
 
 ## Data validation
-### Phase offset check FFT (figure)
+### Spectral Analysis check with FFT : Oscillatory peaks and Phase offset (figure)
 ### Photosensor (figure)
 ### Trigger Hub
 
