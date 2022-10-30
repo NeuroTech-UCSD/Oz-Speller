@@ -41,17 +41,17 @@ Editing...
 ## Reproduce GUI with headset
 ### Record the dataset
 - Configure DSI-24 or configure code for other EEG headsets
-- Open [`/scripts/psychopy_competition.py`](https://github.com/NeuroTech-UCSD/Oz-Speller/blob/main/scripts/psychopy_competition.py) with your preferred text editor. Scroll to the subsection `VARIABLES`: 
+- Open [`/scripts/oz-speller.py`](./scripts/oz-speller.py) with your preferred text editor. Scroll to the subsection `VARIABLES`: 
   - Set `use_dsi_lsl` to `True`
   - Set `test_mode` to `True`
   - Set `make_predictions` to `False`
   - (optional) Set `stim_duration` to `5` or higher if you want to validate the data with spectral analysis
   - Save and exit
-- From the root directory, run `python scripts/psychopy_competition.py` and perform the calibration process, which should take at least 5 minutes.
+- From the root directory, run `python scripts/oz-speller.py` and perform the calibration process, which should take at least 5 minutes.
 - Move `eeg.csv` and `meta.csv` from the root directory to `/data/eeg_recordings/DSI-24/[YOUR_NAME]/run[x]`. You can replace `DSI-24` with a different folder name if you set up the code to work with a different headset.
 - Repeat the last 2 steps at least 3 times if you want to use the dataset to train FBTDCA.
 ### Train the Model
-- Open [`/notebooks/TriggerHubData.ipynb`](https://github.com/NeuroTech-UCSD/Oz-Speller/blob/main/scripts/psychopy_competition.py) with your preferred text editor. 
+- Open [`/notebooks/TriggerHubData.ipynb`](./notebooks/TriggerHubData.ipynb) with your preferred text editor. 
 - On the 3rd cell:
   - Set `sub_dirs` to the appropriate number of runs
   - Within the for loop, find `data_path` and change the first string to `/data/eeg_recordings/DSI-24/[YOUR_NAME]/`.
@@ -60,11 +60,11 @@ Editing...
 Once you have successfully trained the model:
 - On the 5th cell, change the first string in `open()` to `'/reports/trained_models/32-class_speller/DSI-24/[YOUR_NAME]/fbtdca_1s.pkl'`
 - Run the 5th cell
-- Open [`/scripts/psychopy_competition.py`](https://github.com/NeuroTech-UCSD/Oz-Speller/blob/main/scripts/psychopy_competition.py) with your preferred text editor. Scroll to the subsection `VARIABLES`: 
+- Open [`/scripts/oz-speller.py`](./scripts/oz-speller.py) with your preferred text editor. Scroll to the subsection `VARIABLES`: 
   - Set `use_dsi_lsl` to `True`
   - Set `test_mode` to `True` if you want to check the accuracy or `False` if you want to enable the virtual keyboard.
   - Set `make_predictions` to `True`, and set the first string under `open()` to `'/reports/trained_models/32-class_speller/DSI-24/[YOUR_NAME]/fbtdca_1s.pkl'`
-- From the root directory, run `python scripts/psychopy_competition.py` 
+- From the root directory, run `python scripts/oz-speller.py` 
 ### Configure DSI-24
 - Follow the setup instruction for DSI-24 on the Wearable Sensing's [official website](https://wearablesensing.com/dsi-24/). Use the **DSI Streamer** by Wearable Sensing to ensure low impedance for the electrodes, particularly the common reference and the occipital channels.
 </br>
@@ -72,7 +72,7 @@ Once you have successfully trained the model:
 <img src="./reports/figures/montage.png" width="200"></img>
 </br>
 
-- Open [`/scripts/psychopy_competition.py`](https://github.com/NeuroTech-UCSD/Oz-Speller/blob/main/scripts/psychopy_competition.py) with your preferred text editor. Scroll to the subsection `if use_dsi_lsl`: 
+- Open [`/scripts/oz-speller.py`](./scripts/oz-speller.py) with your preferred text editor. Scroll to the subsection `if use_dsi_lsl`: 
   - Change `'--port=COM15'` to the port DSI-24 is assigned to
   - Change the `'COM14'` in `dsi_serial = serial.Serial('COM14', 9600)` to the port the Trigger Hub is assigned to
 - Contact Wearable Sensing for further assistence if needed.
