@@ -116,7 +116,7 @@ From there we validated the presence of oscillations from DSI-7 and produced fig
 </br>
 ![FOURTY](./reports/figures/40-class.png) 
 </br>
-But it proved difficult to validate phase offsets when they are spaced out so evenly. So to better very the presense of phase-offsets in the EEG data, we scaled the amount of classes down to 32 and used only 4 phases for each of 8 frequencies, rather than 1 unique phase for each unique frequency. </br>
+But it proved difficult to validate phase offsets when they are spaced out so evenly. So to better validate the presense of phase-offsets in the EEG data, we scaled the amount of classes down to 32 and used only 4 phases for each of 8 frequencies, rather than 1 unique phase for each unique frequency. </br>
 At this stage, we also implemented a state-of-the-art deep learning model on the 32-class SSVEP data we recorded, called EEGNet:
 </br>
 ![EEGNET](./reports/figures/eegnet.png) 
@@ -145,6 +145,10 @@ Typically you can calculate the inverse-transpose of the spatial filter to deriv
 Once the spatial filter is learned, it is applied to all 32 time-averaged signals and the new trial that needs to be classified, and the filtered time-averaged signal that has the highest Pearson Correlation with the filtered new trial is the predicted class. In fact, the Pearson Correlation values themselves ARE the prediction probabilities:
 </br>
 ![PROB](./reports/figures/prediction_probability.png) 
+</br>
+Eventually we settle on Task-Discriminant Component Analysis, which is also a correlation based method that offers a lightly better prediction accuracy: 
+</br>
+![TDCA](./reports/figures/tdca.png) 
 </br>
 
 ## Acknowledgement
