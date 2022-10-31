@@ -1,1 +1,4 @@
+python_socketio
 python-dotenv
+PsychoPy
+aiohttp

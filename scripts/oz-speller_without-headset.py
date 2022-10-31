@@ -470,14 +470,14 @@ if __name__ == "__main__":
                     flickering_keyboard.colors = np.array([frame] * 3).T
                     flickering_keyboard.draw()
                     top_text.draw()
-                    if core.getTime() > next_flip:
-                        key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
-                        key_colors[:-1] = [1, -1, -1]
-                        flickering_keyboard.colors = key_colors
-                        for failure_frame in range(15):
-                            flickering_keyboard.draw()
-                            win.flip()
-                        break
+                    # if core.getTime() > next_flip:
+                    #     key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
+                    #     key_colors[:-1] = [1, -1, -1]
+                    #     flickering_keyboard.colors = key_colors
+                    #     for failure_frame in range(15):
+                    #         flickering_keyboard.draw()
+                    #         win.flip()
+                    #     break
                     win.flip()
                 key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
                 key_colors[:-1] = [1, 1, 1]
