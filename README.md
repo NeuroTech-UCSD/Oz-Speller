@@ -9,7 +9,7 @@ Check, check, and check. This is the **ultimate EEG spelling machine** combined 
 
 </br>
 
-[![PRESENTATION VIDEO](https://img.youtube.com/vi/-5eUUtTdpno/0.jpg)](https://www.youtube.com/watch?v=-5eUUtTdpno)
+[![PRESENTATION VIDEO](https://img.youtube.com/vi/lCYkRotGZEc/0.jpg)](https://www.youtube.com/watch?v=lCYkRotGZEc)
 
 </br>
 
