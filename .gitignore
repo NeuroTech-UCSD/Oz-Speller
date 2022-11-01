@@ -17,4 +17,6 @@ env/
 # Idea files
 .idea/*
 
+meta.csv
+venv
 

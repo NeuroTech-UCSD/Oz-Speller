@@ -50,5 +50,5 @@ RUN pip install attrdict3
 RUN pip install wxPython
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-COPY . .
+COPY .. .
 CMD [ "xvfb-run", "-s", "-screen 0 1366x768x24 -ac +extension GLX +render -noreset", "python", "scripts/oz-speller_without-headset.py" ]

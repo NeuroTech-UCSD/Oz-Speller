@@ -6,6 +6,10 @@ from datetime import datetime
 import numpy as np
 from datetime import datetime
 import asyncio
+import settings
+
+PORT = settings.Configuration.app['port']
+HOST = settings.Configuration.app['host']
 
 
 def reset_content(filepath: str):
@@ -32,7 +36,6 @@ def update_content(filepath: str, sender: str, text: str):
 
 
 sio = socketio.AsyncClient()
-PORT = 4002
 
 
 @sio.event
@@ -49,7 +52,8 @@ async def connect_error(e):
 async def disconnect():
     print('dsi helper disconnected')
 
-@sio.event(namespace='/chatbot')
+
+@sio.event(namespace='/chatbot_listener')
 async def update_content_channel(message):
     """
 
@@ -60,9 +64,8 @@ async def update_content_channel(message):
 
 
 async def chatbot():
-    host = '192.168.167.132'
     reset_content('states/back_to_front.json')
-    await sio.connect(f'http://{host}:{PORT}', namespaces=['/', '/chatbot'])
+    await sio.connect(f'http://{HOST}:{PORT}', namespaces=['/', '/chatbot_listener'])
     await sio.wait()
 
 
