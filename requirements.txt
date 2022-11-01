@@ -1,1 +1,8 @@
+pyo==1.0.4
+pylsl
+python_socketio
 python-dotenv
+PsychoPy
+aiohttp
+
+
