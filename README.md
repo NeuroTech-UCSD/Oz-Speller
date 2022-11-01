@@ -1,7 +1,7 @@
 # Oz-Speller: A Fast Occipital Channel-Driven Steady-State Visual-Evoked Potential-Based Virtual Keyboard
 
 ## _**1.2**_-second speed, 85% accuracy, 32 choices
-Check, check, and check. This is the **ultimate EEG spelling machine** combined with an intelligent companion app with a chatbot that uses a **GPT-based language model**. Designed with locked-in patients in mind so they can communicate with their caretakers more efficiently, it is powerful as it is user-centric. All that _**speed**_ is right in front of your retina, made more available than ever. Simply type in a few lines of code in your command line, and you have it.</br>
+Check, check, and check. This is the **ultimate EEG spelling machine** combined with an intelligent companion app with a chatbot that uses a **GPT-based language model**. Designed with locked-in patients in mind so they can communicate with their caretakers more efficiently, it is powerful as it is user-centric. All that _**speed**_ is right in front of your retina, made more available than ever. Simply type in one line of code in your command line, and you have it.</br>
 
 ![GIF DEMO](./reports/figures/speller.gif)
 
