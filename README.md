@@ -27,7 +27,7 @@ Simply run ***one line of code*** to reproduce everything you see in the video a
 - Simply type `make APP_PORT=<PORT> HOST_ADDR=<ipv4> app`, where PORT can be any port (ideally 4002) and ipv4 is the
   ipv4 address of your wifi. This one line of code will download all the dependencies and docker images for you, then trigger the chatbot, the
       companion app, as well as the Psychopy GUI as shown in the video below: <br>
-
+  <img src="/reports/figures/entire_app.gif" width="200">  
 
 #### Reproduce only the Psychopy GUI
 
@@ -39,7 +39,11 @@ Simply run ***one line of code*** to reproduce everything you see in the video a
 
 - Simply type `make APP_PORT=<PORT> HOST_ADDR=<ipv4> speller_sim` to use a command prompt in the place of psychopy gui,
   which offers more flexibility in testing other parts of the code, as shown below:
-  <img src="/reports/figures/one_line_code.png" width="600">  
+  <img src="/reports/figures/one_line_code.png" width="600">
+<br>
+
+#### Microservices
+The companion app is developed in the repo: https://github.com/NeuroTech-UCSD/ssvep-ui, and the chatbot is developed in the repo: https://github.com/NeuroTech-UCSD/Conversational-Agents-for-Hospitalized-Agents. Their docker images are stored in the corresponding github package registry published via git action. 
 
 ## Github Directories
 
