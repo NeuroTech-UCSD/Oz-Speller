@@ -64,8 +64,12 @@ Simply run ***one line of code*** to reproduce everything you see in the video a
 
 For clubs without DSI headset, no problem. You can interact with the GUI with your keyboard:
 #### Input screen 1
+![INPUT1](./reports/figures/input_screen_1.png)
 #### Input screen 2
+![INPUT2](./reports/figures/input_screen_2.png)
 #### Home screen
+![HOME](./reports/figures/home_screen.png)
+NOTE: "clear screen" clears the text message the user is inputing. It needs to be activated twice consecutively to take effect. This is to avoid accidental deletion of the message the user is inputing.
 
 ## Reproduce GUI with Headset
 
