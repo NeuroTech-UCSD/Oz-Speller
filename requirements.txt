@@ -1,4 +1,5 @@
 pyo==1.0.4
+numpy
 pylsl
 python_socketio
 python-dotenv

@@ -17,6 +17,9 @@ env/
 # Idea files
 .idea/*
 
+# Others
 meta.csv
 venv
-
+.env
+nohup.out
+states/back_to_front.json
