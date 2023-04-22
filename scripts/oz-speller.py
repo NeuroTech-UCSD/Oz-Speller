@@ -26,22 +26,22 @@ sys.path.append('src')  # if run from the root project directory
 ## VARIABLES
 use_dsi7 = False
 use_dsi_trigger = True
-use_dsi_lsl = False
+use_dsi_lsl = True
 use_arduino = False  # arduino photosensor for flashing timing test
 use_cyton = False
 use_photosensor = False
 record_start_time = True
 center_flash = False  # whether the visual stimuli are only presented at the center of the screen
-test_mode = False  # whether the script indicates target squares and saves recorded data
+test_mode = True  # whether the script indicates target squares and saves recorded data
 home_screen = False
-make_predictions = False  # whether the script makes predictions using a pretrained model
+make_predictions = True  # whether the script makes predictions using a pretrained model
 dummy_mode = True
 
 model = None
 if make_predictions:
     # with open("reports/trained_models/wsx32/fbtdca_1s.pkl", 'rb') as filehandler:
     # with open("reports/trained_models/32-class_speller/DSI-7/Simon/fbtdca_1s6t.pkl", 'rb') as filehandler:
-    with open("reports/trained_models/32-class_speller/DSI-24/Simon/fbtdca_1s.pkl", 'rb') as filehandler:
+    with open("reports/trained_models/32-class_speller/DSI-24/Aidan/fbtdca_1s.pkl", 'rb') as filehandler:
         model = pickle.load(filehandler)
 shuffled_positions = False
 shuffled_initial_positions = False
@@ -411,7 +411,7 @@ if use_dsi_lsl:
     # p = Popen([os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM8',
     # '--lsl-stream-name=mystream'],shell=True,stdin=PIPE) #COM4 or 8 for dsi-7 or COM12 for dsi-24
     p = Popen(
-        [os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM15', '--lsl-stream-name=mystream'],
+        [os.path.join(os.getcwd(), 'src', 'dsi2lsl-win', 'dsi2lsl.exe'), '--port=COM7', '--lsl-stream-name=mystream'],
         shell=True, stdin=PIPE)  # COM4 or 8 for dsi-7 or COM12 for dsi-24
     with open("eeg.csv", 'w') as csv_file:
         # csv_file.write('time, Pz, F4, C4, P4, P3, C3, F3, TRG\n') # For DSI-7
@@ -423,7 +423,7 @@ if use_dsi_lsl:
     time.sleep(15)
     if use_dsi_trigger:
         # dsi_serial = serial.Serial('COM2',115200) # 2 for serial trigger or 13 for trigger hub
-        dsi_serial = serial.Serial('COM14', 9600)  # 2 for serial trigger or 13 for trigger hub
+        dsi_serial = serial.Serial('COM8', 9600)  # 2 for serial trigger or 13 for trigger hub
     eeg = []  # receive_data() saves [timepoints by channels] here
     print(resolve_streams())
     inlets, _ = get_lsl_data(eeg)
@@ -458,7 +458,7 @@ if use_dsi7:
             run_count = 0
             data_np = np.array(data)
             with open("eeg.csv", 'a') as csv_file:
-                np.savetxt(csv_file, data_np, delimiter=', ')
+                np.savetxt(csv_file, data_np, delimiter=',')
             data = []
 
 
@@ -903,14 +903,14 @@ if __name__ == "__main__":
                             inlet.close_stream()
                         os.kill(p.pid, sig.CTRL_C_EVENT)
                         with open("eeg.csv", 'a') as csv_file:
-                            np.savetxt(csv_file, eeg, delimiter=', ')
+                            np.savetxt(csv_file, eeg, delimiter=',')
                     if use_cyton:
                         for inlet in inlets:
                             inlet.close_stream()
                         stop_cyton.set()
                         board.stop_stream()
                         with open("eeg.csv", 'a') as csv_file:
-                            np.savetxt(csv_file, eeg, delimiter=', ')
+                            np.savetxt(csv_file, eeg, delimiter=',')
                     core.quit()
             trial_text = visual.TextStim(win, str(i_trial + 1) + '/' + str(len(sequence)), color=(-1, -1, -1),
                                          colorSpace='rgb')
@@ -1039,16 +1039,17 @@ if __name__ == "__main__":
                     if use_dsi_lsl:
                         for inlet in inlets:
                             inlet.close_stream()
+                        print(eeg)
                         os.kill(p.pid, sig.CTRL_C_EVENT)
                         with open("eeg.csv", 'a') as csv_file:
-                            np.savetxt(csv_file, eeg, delimiter=', ')
+                            np.savetxt(csv_file, eeg, delimiter=',')
                     if use_cyton:
                         for inlet in inlets:
                             inlet.close_stream()
                         stop_cyton.set()
                         board.stop_stream()
                         with open("eeg.csv", 'a') as csv_file:
-                            np.savetxt(csv_file, eeg, delimiter=', ')
+                            np.savetxt(csv_file, eeg, delimiter=',')
                     core.quit()
             key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
             key_colors[class_num] = [1, 1, 1]
@@ -1185,10 +1186,12 @@ if __name__ == "__main__":
                 # flickering_keyboard.draw()
                 flickering_keyboard_caps.draw()
                 win.flip()
-        eeg_np = np.array(eeg_temp).transpose(1, 0, 2, 3)
-        print(eeg_np.shape)
-        with open('eeg.npy', 'wb') as f:
-            np.save(f, eeg_np)
+        with open("eeg.csv", 'a') as csv_file:
+            np.savetxt(csv_file, eeg, delimiter=',')  # finish save
+        # eeg_np = np.array(eeg_temp).transpose(1, 0, 2, 3)
+
+        # with open('eeg.npy', 'wb') as f:
+        #     np.save(f, eeg_np)
         time.sleep(5)
     elif home_screen:
         n_frameskip = 0
@@ -1209,14 +1212,14 @@ if __name__ == "__main__":
                             inlet.close_stream()
                         os.kill(p.pid, sig.CTRL_C_EVENT)
                         with open("eeg.csv", 'a') as csv_file:
-                            np.savetxt(csv_file, eeg, delimiter=', ')
+                            np.savetxt(csv_file, eeg, delimiter=',')
                     if use_cyton:
                         for inlet in inlets:
                             inlet.close_stream()
                         stop_cyton.set()
                         board.stop_stream()
                         with open("eeg.csv", 'a') as csv_file:
-                            np.savetxt(csv_file, eeg, delimiter=', ')
+                            np.savetxt(csv_file, eeg, delimiter=',')
                     core.quit()
             key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
             # flickering_keyboard.colors = key_colors
@@ -1470,14 +1473,14 @@ if __name__ == "__main__":
                                 inlet.close_stream()
                             os.kill(p.pid, sig.CTRL_C_EVENT)
                             with open("eeg.csv", 'a') as csv_file:
-                                np.savetxt(csv_file, eeg, delimiter=', ')
+                                np.savetxt(csv_file, eeg, delimiter=',')
                         if use_cyton:
                             for inlet in inlets:
                                 inlet.close_stream()
                             stop_cyton.set()
                             board.stop_stream()
                             with open("eeg.csv", 'a') as csv_file:
-                                np.savetxt(csv_file, eeg, delimiter=', ')
+                                np.savetxt(csv_file, eeg, delimiter=',')
                         core.quit()
                 key_colors = np.array([[-1, -1, -1]] * (n_keyboard_classes + 1))
                 # flickering_keyboard.colors = key_colors
@@ -1658,14 +1661,14 @@ if __name__ == "__main__":
                                         inlet.close_stream()
                                     os.kill(p.pid, sig.CTRL_C_EVENT)
                                     with open("eeg.csv", 'a') as csv_file:
-                                        np.savetxt(csv_file, eeg, delimiter=', ')
+                                        np.savetxt(csv_file, eeg, delimiter=',')
                                 if use_cyton:
                                     for inlet in inlets:
                                         inlet.close_stream()
                                     stop_cyton.set()
                                     board.stop_stream()
                                     with open("eeg.csv", 'a') as csv_file:
-                                        np.savetxt(csv_file, eeg, delimiter=', ')
+                                        np.savetxt(csv_file, eeg, delimiter=',')
                                 core.quit()
                         time_left = timer.getTime()
                         timeout_text.text = 'Timeout: ' + str(round(time_left, 3))
@@ -1683,8 +1686,8 @@ if __name__ == "__main__":
             inlet.close_stream()
         os.kill(p.pid, sig.CTRL_C_EVENT)
         with open("eeg.csv", 'a') as csv_file:
-            np.savetxt(csv_file, eeg, delimiter=', ')
+            np.savetxt(csv_file, eeg, delimiter=',')
     if use_cyton:
         with open("eeg.csv", 'a') as csv_file:
-            np.savetxt(csv_file, eeg, delimiter=', ')
+            np.savetxt(csv_file, eeg, delimiter=',')
     core.quit()

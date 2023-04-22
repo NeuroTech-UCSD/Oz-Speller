@@ -1,0 +1,4 @@
+seaborn
+mne
+
+# brainda: https://github.com/TBC-TJU/brainda.git
